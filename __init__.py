@@ -12,13 +12,21 @@ from .nodes import (
     MiniMaxH3ResolutionFromBus,
     MiniMaxH3WidthFromBus,
     MiniMaxH3HeightFromBus,
+    MiniMaxH3StepsFromBus,
+    GetStepsFromBus,
+    MiniMaxH3SaveNestedLatent,
+    MiniMaxH3LoadNestedLatent,
+    MiniMaxH3ConcatAVLatent,
+    MiniMaxH3SaveAVLatent,
+    MiniMaxH3LoadAVLatent,
+    MiniMaxH3ConcatAVLatents,
 )
 
 WEB_DIRECTORY = "web"
 
 
 class H3ReferenceBusExtension(ComfyExtension):
-    """ComfyUI extension registering MiniMax H3 reference, settings, and extractor bus nodes."""
+    """ComfyUI extension registering MiniMax H3 reference, settings, extractor, and latent bus nodes."""
 
     async def get_node_list(self):
         return [
@@ -34,6 +42,11 @@ class H3ReferenceBusExtension(ComfyExtension):
             MiniMaxH3ResolutionFromBus,
             MiniMaxH3WidthFromBus,
             MiniMaxH3HeightFromBus,
+            MiniMaxH3StepsFromBus,
+            GetStepsFromBus,
+            MiniMaxH3SaveNestedLatent,
+            MiniMaxH3LoadNestedLatent,
+            MiniMaxH3ConcatAVLatent,
         ]
 
 
@@ -55,6 +68,14 @@ __all__ = [
     "MiniMaxH3ResolutionFromBus",
     "MiniMaxH3WidthFromBus",
     "MiniMaxH3HeightFromBus",
+    "MiniMaxH3StepsFromBus",
+    "GetStepsFromBus",
+    "MiniMaxH3SaveNestedLatent",
+    "MiniMaxH3LoadNestedLatent",
+    "MiniMaxH3ConcatAVLatent",
+    "MiniMaxH3SaveAVLatent",
+    "MiniMaxH3LoadAVLatent",
+    "MiniMaxH3ConcatAVLatents",
     "WEB_DIRECTORY",
 ]
 

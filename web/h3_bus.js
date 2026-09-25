@@ -115,11 +115,13 @@ app.registerExtension({
 
                 const wWidget = node.widgets?.find(w => w.name === "width");
                 const hWidget = node.widgets?.find(w => w.name === "height");
+                const sWidget = node.widgets?.find(w => w.name === "steps");
                 const res = `${wWidget?.value || 1344}x${hWidget?.value || 768}`;
+                const stepsStr = sWidget?.value ? `, ${sWidget.value} steps` : "";
 
                 const busTag = busIn?.link != null ? " [Bus Connected]" : "";
                 const itemsStr = items.length > 0 ? items.join(", ") : "None";
-                statusWidget.value = `Packed: ${itemsStr} (${res})${busTag}`;
+                statusWidget.value = `Packed: ${itemsStr} (${res}${stepsStr})${busTag}`;
                 node.setDirtyCanvas(true, true);
             }
 
@@ -130,6 +132,17 @@ app.registerExtension({
                 }
                 setTimeout(updateSettingsStatus, 60);
             };
+
+            for (const wName of ["width", "height", "steps"]) {
+                const w = node.widgets?.find(x => x.name === wName);
+                if (w) {
+                    const origCb = w.callback;
+                    w.callback = function() {
+                        if (origCb) origCb.apply(this, arguments);
+                        updateSettingsStatus();
+                    };
+                }
+            }
 
             setTimeout(updateSettingsStatus, 100);
         }

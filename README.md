@@ -54,6 +54,7 @@ Connecting all of these individual sockets across large workflows or subgraphs i
   - `audio_vae` *(Optional `VAE`)*: Audio VAE for synchronized stereo sound.
   - `width` *(INT, default 1344, step 32)*: Target video width.
   - `height` *(INT, default 768, step 32)*: Target video height.
+  - `steps` *(INT, default 20, min 1, max 10000)*: Sampling steps.
 - **Output**:
   - `bus` (`H3_VIDEO_SETTINGS_BUS`): Bundled video settings bus.
 
@@ -68,12 +69,13 @@ Connecting all of these individual sockets across large workflows or subgraphs i
   - `audio_vae` (`VAE`): Audio VAE for conditioning / decode.
   - `width` (`INT`): Output width.
   - `height` (`INT`): Output height.
+  - `steps` (`INT`): Sampling steps.
 
 ---
 
 ### Global Settings Extractor Nodes
 
-When you only need a single setting or resolution pair somewhere in your workflow, use these compact extractor nodes instead of expanding the entire bus:
+When you only need a single setting, steps count, or resolution pair somewhere in your workflow, use these compact extractor nodes instead of expanding the entire bus:
 
 | Node | Node ID | Output | Description |
 |---|---|---|---|
@@ -85,8 +87,9 @@ When you only need a single setting or resolution pair somewhere in your workflo
 | **Resolution from Bus** | `MiniMaxH3ResolutionFromBus` | `width`, `height` (`INT`, `INT`) | Extracts both width and height integers. |
 | **Width from Bus** | `MiniMaxH3WidthFromBus` | `width` (`INT`) | Extracts only the width integer. |
 | **Height from Bus** | `MiniMaxH3HeightFromBus` | `height` (`INT`) | Extracts only the height integer. |
+| **Steps from Bus / Get Steps from Bus** | `MiniMaxH3StepsFromBus` / `GetStepsFromBus` | `steps` (`INT`) | Extracts the sampling steps integer. |
 
-All extractors accept `H3_VIDEO_SETTINGS_BUS` as input and safely return `None` if the specific setting was not connected to the upstream bus.
+All extractors accept `H3_VIDEO_SETTINGS_BUS` as input and safely return fallback defaults if the specific setting was not connected to the upstream bus.
 
 ---
 
@@ -164,4 +167,100 @@ With both buses in place, your entire pipeline is routed using just **two wires*
 ```
 
 Unconnected reference sockets safely pass as `None`, which `MiniMaxH3ReferenceToVideo` natively ignores during execution.
+
+---
+
+## Long Video Creation in Parts: MiniMax H3 NestedTensor Save & Load
+
+When creating long videos (15s, 30s, 60s+) with MiniMax H3, generating the entire duration in a single pass can cause VRAM exhaustion or degradation. The standard technique is to generate videos in sequential parts (e.g. Part 1, Part 2, Part 3) using continuation guides.
+
+### Why Standard Latent Nodes Fail
+
+MiniMax H3 is an omnimodal model that generates video latents (`5D: [B, 24, T, H/16, W/16]`) and synchronized stereo audio latents (`4D: [B, 32, 2, T_audio]`) jointly inside ComfyUI's custom **`NestedTensor`** wrapper (`comfy.nested_tensor.NestedTensor`).
+
+- Standard ComfyUI `SaveLatent` calls `.contiguous()` directly on the latent tensor, which immediately throws `AttributeError: 'NestedTensor' object has no attribute 'contiguous'` and crashes the workflow.
+- Standard `LoadLatent` only loads a single `latent_tensor` from `input/`, ignoring audio streams and failing to reconstruct the `NestedTensor` required by MiniMax samplers, continuation nodes, and decoders.
+
+The following nodes solve this by natively saving, loading, and concatenating MiniMax H3's `NestedTensor` format without errors:
+
+### 1. Save MiniMax H3 AV Latent (`MiniMaxH3SaveNestedLatent`)
+- **Category**: `Bus/MiniMax/Latent`
+- **Search Aliases**: `Save MiniMax H3 AV Latent`, `Save Nested Tensor`, `Save Video Part`
+- **Inputs**:
+  - `samples` (`LATENT`): The incoming MiniMax H3 joint AV latent (`NestedTensor`).
+  - `filename_prefix` (`STRING`, default `latents/h3_part`): Output path and subfolder. Supports ComfyUI formatting tokens like `%date:yyyy-MM-dd%`.
+  - `part_number` (`INT`, default `1`, min `0`): Part number for this video segment (e.g. `1` for Part 1). When `> 0`, automatically appends `_part_01` to the filename.
+  - `append_counter` (`BOOLEAN`, default `True`): Appends sequential counter (`_00001_`) to prevent accidental overwrites.
+  - `save_output` (`BOOLEAN`, default `True`): When `False`, acts as a pass-through without writing to disk.
+- **Output**:
+  - `samples` (`LATENT`): Pass-through of the input latent for downstream VAE decoding or continuation.
+- **Features**:
+  - Unbinds and serializes both video and audio streams into standard `.latent` safetensors files without memory-sharing conflicts.
+  - Stores part numbering, frame count, audio sample length, resolution, and generation prompt in file metadata.
+  - Displays real-time on-canvas summary: filename, folder, part number, frame count, duration, resolution, audio status, and file size in MB.
+
+### 2. Load MiniMax H3 AV Latent (`MiniMaxH3LoadNestedLatent`)
+- **Category**: `Bus/MiniMax/Latent`
+- **Search Aliases**: `Load MiniMax H3 AV Latent`, `Load Nested Tensor`, `Load Video Part`
+- **Inputs**:
+  - `latent_file` (`Combo`): Dropdown listing all available `.latent` and `.safetensors` files from **both** `output/` and `input/` directories (no need to manually move files from output to input!).
+  - `custom_path` (`STRING`, optional): Optional manual path override. Supports absolute paths or paths relative to `output/` or `input/`.
+- **Outputs**:
+  - `samples` (`LATENT`): Fully reconstructed native `NestedTensor((video, audio))` ready for KSampler, continuation nodes, or VAE decoders.
+  - `video_latent` (`LATENT`): Video stream alone wrapped as standard ComfyUI latent (ideal for video upscalers or isolated video decoding).
+  - `audio_latent` (`LATENT`): Audio stream alone wrapped as latent (ideal for `VAEDecodeAudio`).
+  - `frame_count` (`INT`): Total pixel frames represented at 24 fps (e.g. `124`).
+  - `part_number` (`INT`): Part number extracted from metadata or filename.
+  - `width` (`INT`): Video width in pixels (e.g. `1344`).
+  - `height` (`INT`): Video height in pixels (e.g. `768`).
+  - `duration` (`FLOAT`): Duration in seconds at 24 fps.
+
+### 3. Concat MiniMax H3 AV Latents (`MiniMaxH3ConcatAVLatent`)
+- **Category**: `Bus/MiniMax/Latent`
+- **Search Aliases**: `Concat MiniMax H3 Latents`, `Stitch Video Parts`, `Join H3 Latents`
+- **Inputs**:
+  - `latent_a` (`LATENT`): First MiniMax H3 AV latent (Part N).
+  - `latent_b` (`LATENT`): Second MiniMax H3 AV latent (Part N+1).
+  - `latent_c` (`LATENT`, optional): Third MiniMax H3 AV latent (Part N+2).
+  - `trim_overlap_tokens` (`INT`, default `0`): Video tokens to trim from subsequent parts to eliminate continuation overlaps (5 video tokens = 17 frames = 28 audio tokens).
+- **Outputs**:
+  - `samples` (`LATENT`): Combined multi-part `NestedTensor` with perfectly synchronized video and audio timelines.
+  - `video_latent` (`LATENT`): Stitched video stream alone.
+  - `audio_latent` (`LATENT`): Stitched audio stream alone.
+  - `total_frame_count` (`INT`): Cumulative frame count of all concatenated parts.
+  - `duration` (`FLOAT`): Cumulative duration in seconds.
+
+---
+
+## Multi-Part Long Video Workflow Example
+
+```
+=== PASS 1: Generate & Save Part 1 ===
+[ Prompt 1 ] -----------------------> [ MiniMax H3 Image to Video ]
+                                                  |
+                                                  v (samples: NestedTensor)
+                                    [ Save MiniMax H3 AV Latent ] (part_number: 1)
+                                                  |
+                                                  +---> [ VAE Decode Video ] -> [ Save Image/Video ]
+                                                  +---> [ VAE Decode Audio ] -> [ Save Audio ]
+
+=== PASS 2: Continue from Part 1 ===
+[ Load MiniMax H3 AV Latent ] (part 1)
+      |
+      +---> samples ------------> [ MiniMax H3 Latent Tail Guide ]
+      +---> frame_count           [ MiniMax H3 Guided Continuation Window ]
+                                                  |
+[ Prompt 2 ] -----------------------> [ Sampler ]
+                                            |
+                                            v (samples: Part 2 extension)
+                                    [ Save MiniMax H3 AV Latent ] (part_number: 2)
+
+=== FINAL PASS: Stitch Parts & Decode Master Video ===
+[ Load Part 1 ] ------------------------> latent_a -> [ Concat MiniMax H3 AV Latents ]
+[ Load Part 2 ] ------------------------> latent_b                  |
+[ Load Part 3 ] ------------------------> latent_c                  v (samples: Complete Video)
+                                                            +-------> [ VAE Decode Video ] -> [ Save Full Video ]
+                                                            +-------> [ VAE Decode Audio ] -> [ Save Full Soundtrack ]
+```
+
 

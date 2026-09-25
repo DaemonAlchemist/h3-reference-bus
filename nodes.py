@@ -5,8 +5,30 @@ Provides create and expand bus nodes for multimodal references
 for the MiniMax H3 Reference-to-Video (Ref2VA) workflow.
 """
 
+import hashlib
+import json
+import os
+import re
 from typing import Any
+
 import nodes
+import folder_paths
+import safetensors.torch
+from safetensors import safe_open
+import torch
+
+import comfy.utils
+try:
+    from comfy.nested_tensor import NestedTensor
+except ImportError:
+    class NestedTensor:
+        def __init__(self, tensors):
+            self.tensors = list(tensors)
+            self.is_nested = True
+
+        def unbind(self):
+            return self.tensors
+
 from comfy_api.latest import io
 from comfy_api.latest._ui import PreviewText
 
@@ -366,7 +388,7 @@ class MiniMaxH3ExpandReferenceBus(io.ComfyNode):
 
 
 class MiniMaxH3CreateVideoSettingsBus(io.ComfyNode):
-    """Create a MiniMax H3 video settings bus bundling model, clip, video VAE, audio VAE, width, and height."""
+    """Create a MiniMax H3 video settings bus bundling model, clip, video VAE, audio VAE, width, height, and steps."""
 
     @classmethod
     def define_schema(cls):
@@ -374,7 +396,7 @@ class MiniMaxH3CreateVideoSettingsBus(io.ComfyNode):
             node_id="MiniMaxH3CreateVideoSettingsBus",
             display_name="Create MiniMax H3 Video Settings Bus",
             category="Bus/MiniMax",
-            description="Bundle global video settings (model, clip, video VAE, audio VAE, width, height) into a single bus for MiniMax H3 workflows.",
+            description="Bundle global video settings (model, clip, video VAE, audio VAE, width, height, steps) into a single bus for MiniMax H3 workflows.",
             inputs=[
                 H3VideoSettingsBusType.Input(
                     "bus",
@@ -387,6 +409,7 @@ class MiniMaxH3CreateVideoSettingsBus(io.ComfyNode):
                 io.Vae.Input("audio_vae", optional=True, tooltip="Audio VAE for synchronized audio"),
                 io.Int.Input("width", default=1344, min=32, max=nodes.MAX_RESOLUTION, step=32, tooltip="Output video width (multiple of 32, default 1344)"),
                 io.Int.Input("height", default=768, min=32, max=nodes.MAX_RESOLUTION, step=32, tooltip="Output video height (multiple of 32, default 768)"),
+                io.Int.Input("steps", default=20, min=1, max=10000, step=1, tooltip="Sampling steps (default 20)"),
             ],
             outputs=[H3VideoSettingsBusType.Output("bus", display_name="bus")],
         )
@@ -401,6 +424,7 @@ class MiniMaxH3CreateVideoSettingsBus(io.ComfyNode):
         audio_vae: Any = None,
         width: int = 1344,
         height: int = 768,
+        steps: int = 20,
         **kwargs,
     ) -> io.NodeOutput:
         bus = bus or {}
@@ -411,6 +435,7 @@ class MiniMaxH3CreateVideoSettingsBus(io.ComfyNode):
             "audio_vae": audio_vae if audio_vae is not None else bus.get("audio_vae"),
             "width": width if width is not None else bus.get("width", 1344),
             "height": height if height is not None else bus.get("height", 768),
+            "steps": steps if steps is not None else bus.get("steps", 20),
         }
 
         model_str = "Connected" if out_bus["model"] is not None else "None"
@@ -424,14 +449,15 @@ class MiniMaxH3CreateVideoSettingsBus(io.ComfyNode):
             f"CLIP: {clip_str}\n"
             f"Video VAE: {vae_str}\n"
             f"Audio VAE: {avae_str}\n"
-            f"Resolution: {out_bus['width']}x{out_bus['height']}"
+            f"Resolution: {out_bus['width']}x{out_bus['height']}\n"
+            f"Steps: {out_bus['steps']}"
         )
 
         return io.NodeOutput(out_bus, ui=PreviewText(summary))
 
 
 class MiniMaxH3ExpandVideoSettingsBus(io.ComfyNode):
-    """Expand a MiniMax H3 video settings bus into model, clip, video VAE, audio VAE, width, and height."""
+    """Expand a MiniMax H3 video settings bus into model, clip, video VAE, audio VAE, width, height, and steps."""
 
     @classmethod
     def define_schema(cls):
@@ -439,7 +465,7 @@ class MiniMaxH3ExpandVideoSettingsBus(io.ComfyNode):
             node_id="MiniMaxH3ExpandVideoSettingsBus",
             display_name="Expand MiniMax H3 Video Settings Bus",
             category="Bus/MiniMax",
-            description="Unpack a MiniMax H3 video settings bus into model, clip, video VAE, audio VAE, width, and height.",
+            description="Unpack a MiniMax H3 video settings bus into model, clip, video VAE, audio VAE, width, height, and steps.",
             inputs=[
                 H3VideoSettingsBusType.Input(
                     "bus",
@@ -453,6 +479,7 @@ class MiniMaxH3ExpandVideoSettingsBus(io.ComfyNode):
                 io.Vae.Output("audio_vae", display_name="audio_vae", tooltip="Audio VAE for synchronized audio"),
                 io.Int.Output("width", display_name="width", tooltip="Output video width"),
                 io.Int.Output("height", display_name="height", tooltip="Output video height"),
+                io.Int.Output("steps", display_name="steps", tooltip="Sampling steps"),
             ],
         )
 
@@ -466,6 +493,7 @@ class MiniMaxH3ExpandVideoSettingsBus(io.ComfyNode):
             bus.get("audio_vae"),
             bus.get("width", 1344),
             bus.get("height", 768),
+            bus.get("steps", 20),
         )
 
 
@@ -635,4 +663,692 @@ class MiniMaxH3VAEsFromBus(io.ComfyNode):
         return io.NodeOutput(bus.get("vae"), bus.get("audio_vae"))
 
 
+class MiniMaxH3StepsFromBus(io.ComfyNode):
+    """Extract sampling steps integer from a MiniMax H3 video settings bus."""
 
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="MiniMaxH3StepsFromBus",
+            display_name="Steps from Bus",
+            category="Bus/MiniMax",
+            description="Extract sampling steps integer from a MiniMax H3 video settings bus.",
+            inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
+            outputs=[io.Int.Output("steps", display_name="steps", tooltip="Sampling steps")],
+        )
+
+    @classmethod
+    def execute(cls, bus: dict[str, Any] | None = None) -> io.NodeOutput:
+        bus = bus or {}
+        return io.NodeOutput(bus.get("steps", 20))
+
+
+class GetStepsFromBus(io.ComfyNode):
+    """Extract sampling steps integer from a MiniMax H3 video settings bus."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="GetStepsFromBus",
+            display_name="Get Steps from Bus",
+            category="Bus/MiniMax",
+            description="Extract sampling steps integer from a MiniMax H3 video settings bus.",
+            inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
+            outputs=[io.Int.Output("steps", display_name="steps", tooltip="Sampling steps")],
+        )
+
+    @classmethod
+    def execute(cls, bus: dict[str, Any] | None = None) -> io.NodeOutput:
+        bus = bus or {}
+        return io.NodeOutput(bus.get("steps", 20))
+
+
+# ==============================================================================
+# MiniMax H3 NestedTensor Latent Save & Load Nodes for Multi-Part Long Videos
+# ==============================================================================
+
+FPS = 24
+AUDIO_LATENT_FPS = 40
+
+
+def _h3_video_t_from_frame_count(frame_count: int) -> int:
+    """Return the MiniMax H3 video latent length (T) for an aligned frame count."""
+    if frame_count <= 5:
+        return 2
+    return ((frame_count - 5) // 17) * 5 + 2
+
+
+def _h3_frame_count_from_video_t(video_t: int) -> int:
+    """Return the pixel-frame count represented by a MiniMax H3 video latent length (T)."""
+    if video_t < 2:
+        return max(1, video_t * 4)
+    if (video_t - 2) % 5 != 0:
+        return ((video_t - 2) // 5) * 17 + 5
+    groups = (video_t - 2) // 5
+    return groups * 17 + 5
+
+
+def _h3_audio_t_at_frame(frame_index: int) -> int:
+    """Return cumulative 40 Hz audio-latent index at a 24 fps frame boundary."""
+    return round(frame_index * AUDIO_LATENT_FPS / FPS)
+
+
+def _get_latent_files() -> list[str]:
+    """Scan both output and input directories (and their subdirectories) for .latent and .safetensors files."""
+    found = set()
+    # 1. Output directory
+    try:
+        output_dir = folder_paths.get_output_directory()
+        if output_dir and os.path.exists(output_dir):
+            for root, _, filenames in os.walk(output_dir):
+                for f in filenames:
+                    if f.endswith(".latent") or f.endswith(".safetensors"):
+                        rel = os.path.relpath(os.path.join(root, f), output_dir).replace("\\", "/")
+                        found.add(f"{rel} [output]")
+    except Exception:
+        pass
+
+    # 2. Input directory
+    try:
+        input_dir = folder_paths.get_input_directory()
+        if input_dir and os.path.exists(input_dir):
+            for root, _, filenames in os.walk(input_dir):
+                for f in filenames:
+                    if f.endswith(".latent") or f.endswith(".safetensors"):
+                        rel = os.path.relpath(os.path.join(root, f), input_dir).replace("\\", "/")
+                        found.add(f"{rel} [input]")
+                        found.add(rel)
+    except Exception:
+        pass
+
+    sorted_files = sorted(list(found))
+    return sorted_files if sorted_files else ["none"]
+
+
+def _extract_h3_av_streams(latent: Any) -> tuple[torch.Tensor, torch.Tensor | None, list[torch.Tensor], bool]:
+    """Safely extract video, audio, and extra streams from a ComfyUI latent dict or raw latent."""
+    samples = latent.get("samples") if isinstance(latent, dict) else latent
+    if samples is None:
+        raise ValueError("Latent contains no samples")
+
+    is_nested = getattr(samples, "is_nested", False)
+    if is_nested:
+        tensors = samples.unbind()
+        if not tensors:
+            raise ValueError("NestedTensor contains no tensors")
+        video = tensors[0]
+        audio = tensors[1] if len(tensors) > 1 else None
+        extras = list(tensors[2:]) if len(tensors) > 2 else []
+        return video, audio, extras, True
+    elif isinstance(samples, torch.Tensor):
+        return samples, None, [], False
+    else:
+        raise TypeError(f"Expected NestedTensor or torch.Tensor in samples, got {type(samples)}")
+
+
+class MiniMaxH3SaveNestedLatent(io.ComfyNode):
+    """Save MiniMax H3 joint video+audio NestedTensor latents to disk for multi-part long video workflows."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="MiniMaxH3SaveNestedLatent",
+            display_name="Save MiniMax H3 AV Latent (NestedTensor)",
+            category="Bus/MiniMax/Latent",
+            description=(
+                "Saves MiniMax H3 joint video and synchronized audio latents in NestedTensor format to disk as .latent (safetensors). "
+                "Prevents crashes caused by standard SaveLatent on multi-stream NestedTensors and attaches part numbering, frame count, "
+                "and timing metadata to streamline rendering long videos in parts."
+            ),
+            search_aliases=[
+                "save minimax h3 latent",
+                "save nested tensor",
+                "save av latent",
+                "h3 save latent",
+                "save video part",
+                "save h3 part",
+                "export h3 latent",
+            ],
+            inputs=[
+                io.Latent.Input("samples", tooltip="MiniMax H3 joint AV latent (NestedTensor containing video and audio streams)"),
+                io.String.Input(
+                    "filename_prefix",
+                    default="latents/h3_part",
+                    tooltip="Filename prefix and optional subfolder (e.g. 'latents/scene_01'). Supports standard ComfyUI format tokens like %date:yyyy-MM-dd%.",
+                ),
+                io.Int.Input(
+                    "part_number",
+                    default=1,
+                    min=0,
+                    max=9999,
+                    step=1,
+                    tooltip="Part number in multi-part long video sequences (e.g. 1 for Part 1). When > 0, adds '_part_XX' to the filename. Set to 0 to disable.",
+                ),
+                io.Boolean.Input(
+                    "append_counter",
+                    default=True,
+                    tooltip="Append ComfyUI sequential counter (_00001_) to prevent overwriting previous takes.",
+                ),
+                io.Boolean.Input(
+                    "save_output",
+                    default=True,
+                    tooltip="Save the file to disk. If False, acts as a non-saving pass-through.",
+                ),
+            ],
+            hidden=[io.Hidden.prompt, io.Hidden.extra_pnginfo],
+            is_output_node=True,
+            outputs=[
+                io.Latent.Output("samples", display_name="samples", tooltip="Pass-through of the input AV latent for downstream nodes (e.g. VAE Decode or continuation)"),
+            ],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        samples: Any,
+        filename_prefix: str = "latents/h3_part",
+        part_number: int = 1,
+        append_counter: bool = True,
+        save_output: bool = True,
+        prompt: Any = None,
+        extra_pnginfo: Any = None,
+        **kwargs,
+    ) -> io.NodeOutput:
+        if samples is None:
+            raise ValueError("MiniMaxH3SaveNestedLatent: input samples is None")
+
+        video, audio, extras, is_nested = _extract_h3_av_streams(samples)
+
+        # Inspect dimensions
+        if video.ndim == 5:
+            b, c, t, h, w = video.shape
+            width = w * 16
+            height = h * 16
+            frame_count = _h3_frame_count_from_video_t(t)
+            video_dur = frame_count / FPS
+        else:
+            width = 0
+            height = 0
+            frame_count = 0
+            video_dur = 0.0
+
+        if audio is not None:
+            audio_dur = audio.shape[-1] / AUDIO_LATENT_FPS
+        else:
+            audio_dur = 0.0
+
+        # Construct safetensors state dict without shared memory references
+        sd = {
+            "video_latent": video.contiguous().cpu(),
+            "latent_format_version_0": torch.tensor([]),
+            "is_h3_nested": torch.tensor([1 if is_nested else 0], dtype=torch.uint8),
+            "num_streams": torch.tensor([1 + (1 if audio is not None else 0) + len(extras)], dtype=torch.int32),
+        }
+
+        if audio is not None:
+            sd["audio_latent"] = audio.contiguous().cpu()
+
+        for idx, extra in enumerate(extras):
+            sd[f"stream_{idx + 2}"] = extra.contiguous().cpu()
+
+        # Handle noise mask
+        noise_mask = samples.get("noise_mask") if isinstance(samples, dict) else None
+        if noise_mask is not None:
+            if getattr(noise_mask, "is_nested", False):
+                nm_streams = noise_mask.unbind()
+                sd["video_noise_mask"] = nm_streams[0].contiguous().cpu()
+                if len(nm_streams) > 1:
+                    sd["audio_noise_mask"] = nm_streams[1].contiguous().cpu()
+            elif isinstance(noise_mask, torch.Tensor):
+                sd["noise_mask"] = noise_mask.contiguous().cpu()
+
+        # Prepare metadata (safetensors requires all metadata values to be strings)
+        metadata = {
+            "format": "MiniMax_H3_NestedTensor",
+            "part_number": str(part_number),
+            "frame_count": str(frame_count),
+            "video_frames": str(frame_count),
+            "video_shape": json.dumps(list(video.shape)),
+            "audio_shape": json.dumps(list(audio.shape)) if audio is not None else "",
+            "video_duration_seconds": f"{video_dur:.3f}",
+            "audio_duration_seconds": f"{audio_dur:.3f}" if audio is not None else "",
+            "width": str(width),
+            "height": str(height),
+            "fps": str(FPS),
+        }
+
+        if prompt is not None:
+            metadata["prompt"] = json.dumps(prompt)
+        if extra_pnginfo is not None:
+            for k, v in extra_pnginfo.items():
+                metadata[k] = json.dumps(v)
+
+        # Build path and filename
+        prefix = filename_prefix.strip()
+        if part_number > 0:
+            part_tag = f"part_{part_number:02d}"
+            if not (prefix.endswith(part_tag) or prefix.endswith(f"part{part_number:02d}")):
+                prefix = f"{prefix}_{part_tag}"
+
+        output_dir = folder_paths.get_output_directory()
+        full_output_folder, base_filename, counter, subfolder, _ = folder_paths.get_save_image_path(
+            prefix, output_dir
+        )
+        os.makedirs(full_output_folder, exist_ok=True)
+
+        if append_counter:
+            file_name = f"{base_filename}_{counter:05}_.latent"
+        else:
+            file_name = f"{base_filename}.latent"
+
+        full_filepath = os.path.join(full_output_folder, file_name)
+
+        file_size_mb = 0.0
+        if save_output:
+            comfy.utils.save_torch_file(sd, full_filepath, metadata=metadata)
+            if os.path.exists(full_filepath):
+                file_size_mb = os.path.getsize(full_filepath) / (1024 * 1024)
+
+        results = [{
+            "filename": file_name,
+            "subfolder": subfolder,
+            "type": "output"
+        }]
+
+        status_str = f"{file_size_mb:.2f} MB" if save_output else "Pass-through (Not Saved)"
+        summary_text = (
+            f"[Saved MiniMax H3 AV Latent]\n"
+            f"File: {file_name}\n"
+            f"Folder: {subfolder or '(output root)'}\n"
+            f"Part: {part_number if part_number > 0 else 'N/A'}\n"
+            f"Video: {frame_count} frames ({video_dur:.2f}s @ {FPS}fps, {width}x{height})\n"
+            f"Audio: {'Synchronized (' + f'{audio_dur:.2f}s)' if audio is not None else 'None'}\n"
+            f"Streams: {sd['num_streams'].item()} (NestedTensor)\n"
+            f"Size: {status_str}"
+        )
+
+        return io.NodeOutput(
+            samples,
+            ui={"text": (summary_text,), "latents": results}
+        )
+
+
+class MiniMaxH3LoadNestedLatent(io.ComfyNode):
+    """Load MiniMax H3 joint video+audio NestedTensor latents from disk for multi-part long video workflows."""
+
+    @classmethod
+    def define_schema(cls):
+        files = _get_latent_files()
+        return io.Schema(
+            node_id="MiniMaxH3LoadNestedLatent",
+            display_name="Load MiniMax H3 AV Latent (NestedTensor)",
+            category="Bus/MiniMax/Latent",
+            description=(
+                "Loads MiniMax H3 joint video and synchronized audio latents saved in NestedTensor format from input or output directories. "
+                "Reconstructs the native NestedTensor((video, audio)) object required by MiniMax H3 samplers, continuation nodes, and VAE decoders. "
+                "Also outputs separate video and audio latents, frame count, part number, and duration to streamline long video continuation."
+            ),
+            search_aliases=[
+                "load minimax h3 latent",
+                "load nested tensor",
+                "load av latent",
+                "h3 load latent",
+                "load video part",
+                "load h3 part",
+                "open h3 latent",
+            ],
+            inputs=[
+                io.Combo.Input(
+                    "latent_file",
+                    options=files,
+                    tooltip="Select a saved latent file (.latent or .safetensors) from output or input directory.",
+                ),
+                io.String.Input(
+                    "custom_path",
+                    default="",
+                    optional=True,
+                    tooltip="Optional direct path or filename override. Supports absolute paths or paths relative to ComfyUI input/output folders.",
+                ),
+            ],
+            outputs=[
+                io.Latent.Output("samples", display_name="samples", tooltip="Combined MiniMax H3 joint AV latent (NestedTensor) ready for KSampler, continuation nodes, or VAE Decode"),
+                io.Latent.Output("video_latent", display_name="video_latent", tooltip="Video stream alone wrapped as LATENT dict, ready for standard video nodes or VAE Decode"),
+                io.Latent.Output("audio_latent", display_name="audio_latent", tooltip="Audio stream alone wrapped as LATENT dict, ready for VAEDecodeAudio"),
+                io.Int.Output("frame_count", display_name="frame_count", tooltip="Total pixel frames represented by this latent at 24 fps"),
+                io.Int.Output("part_number", display_name="part_number", tooltip="Part number extracted from file metadata or filename (defaults to 1)"),
+                io.Int.Output("width", display_name="width", tooltip="Video width in pixels"),
+                io.Int.Output("height", display_name="height", tooltip="Video height in pixels"),
+                io.Float.Output("duration", display_name="duration", tooltip="Duration in seconds at 24 fps"),
+            ],
+        )
+
+    @classmethod
+    def _resolve_filepath(cls, latent_file: str, custom_path: str | None = None) -> str:
+        """Resolve the full path of the target latent file across input, output, and custom locations."""
+        if custom_path and custom_path.strip():
+            cp = custom_path.strip()
+            # 1. Absolute path
+            if os.path.isabs(cp) and os.path.exists(cp):
+                return cp
+            # 2. Relative to output directory
+            out_candidate = os.path.join(folder_paths.get_output_directory(), cp)
+            if os.path.exists(out_candidate):
+                return out_candidate
+            # 3. Relative to input directory
+            inp_candidate = os.path.join(folder_paths.get_input_directory(), cp)
+            if os.path.exists(inp_candidate):
+                return inp_candidate
+            # 4. Try ComfyUI annotated path resolver
+            try:
+                resolved = folder_paths.get_annotated_filepath(cp)
+                if os.path.exists(resolved):
+                    return resolved
+            except Exception:
+                pass
+            if os.path.exists(cp):
+                return os.path.abspath(cp)
+            raise FileNotFoundError(f"MiniMaxH3LoadNestedLatent: custom_path file not found: {custom_path}")
+
+        if not latent_file or latent_file == "none":
+            raise ValueError("MiniMaxH3LoadNestedLatent: no latent file selected and custom_path is empty")
+
+        return folder_paths.get_annotated_filepath(latent_file)
+
+    @classmethod
+    def fingerprint_inputs(cls, latent_file: str, custom_path: str = "") -> str:
+        try:
+            resolved = cls._resolve_filepath(latent_file, custom_path)
+            if os.path.exists(resolved):
+                mtime = os.path.getmtime(resolved)
+                return hashlib.sha256(f"{resolved}_{mtime}".encode()).hexdigest()
+        except Exception:
+            pass
+        return f"{latent_file}_{custom_path}"
+
+    @classmethod
+    def validate_inputs(cls, latent_file: str, custom_path: str = "") -> bool | str:
+        try:
+            resolved = cls._resolve_filepath(latent_file, custom_path)
+            if not os.path.exists(resolved):
+                return f"Latent file does not exist: {resolved}"
+            return True
+        except Exception as e:
+            return str(e)
+
+    @classmethod
+    def execute(
+        cls,
+        latent_file: str,
+        custom_path: str = "",
+        **kwargs,
+    ) -> io.NodeOutput:
+        resolved_path = cls._resolve_filepath(latent_file, custom_path)
+        if not os.path.exists(resolved_path):
+            raise FileNotFoundError(f"MiniMaxH3LoadNestedLatent: file not found at {resolved_path}")
+
+        sd = safetensors.torch.load_file(resolved_path, device="cpu")
+        metadata = {}
+        try:
+            with safe_open(resolved_path, framework="pt") as f:
+                metadata = f.metadata() or {}
+        except Exception:
+            pass
+
+        # 1. Extract video stream
+        video = None
+        for k in ["video_latent", "latent_tensor", "stream_0"]:
+            if k in sd:
+                video = sd[k]
+                break
+        if video is None:
+            for v in sd.values():
+                if isinstance(v, torch.Tensor) and v.ndim in (4, 5):
+                    video = v
+                    break
+        if video is None:
+            raise ValueError(f"Could not find video latent tensor in {resolved_path}")
+
+        # 2. Extract audio stream
+        audio = None
+        for k in ["audio_latent", "audio_tensor", "stream_1"]:
+            if k in sd:
+                audio = sd[k]
+                break
+
+        # 3. Extract extra streams if any
+        extras = []
+        idx = 2
+        while f"stream_{idx}" in sd:
+            extras.append(sd[f"stream_{idx}"])
+            idx += 1
+
+        # 4. Reconstruct NestedTensor
+        is_nested_flag = sd.get("is_h3_nested")
+        was_nested = bool(is_nested_flag.item()) if is_nested_flag is not None else (audio is not None)
+
+        if audio is not None or extras or was_nested:
+            all_streams = [video]
+            if audio is not None:
+                all_streams.append(audio)
+            all_streams.extend(extras)
+            combined_samples = NestedTensor(all_streams)
+        else:
+            combined_samples = video
+
+        # 5. Extract noise mask if present
+        noise_mask = None
+        if "video_noise_mask" in sd and "audio_noise_mask" in sd:
+            noise_mask = NestedTensor((sd["video_noise_mask"], sd["audio_noise_mask"]))
+        elif "video_noise_mask" in sd:
+            noise_mask = sd["video_noise_mask"]
+        elif "noise_mask" in sd:
+            noise_mask = sd["noise_mask"]
+
+        samples_out = {"samples": combined_samples}
+        if noise_mask is not None:
+            samples_out["noise_mask"] = noise_mask
+
+        # Individual stream latent dicts
+        video_out = {"samples": video}
+        if "video_noise_mask" in sd:
+            video_out["noise_mask"] = sd["video_noise_mask"]
+
+        if audio is not None:
+            audio_out = {"samples": audio}
+            if "audio_noise_mask" in sd:
+                audio_out["noise_mask"] = sd["audio_noise_mask"]
+        else:
+            audio_out = {"samples": torch.zeros((1, 32, 2, 0))}
+
+        # Calculate dimensions and metadata
+        if video.ndim == 5:
+            b, c, t, h, w = video.shape
+            width = w * 16
+            height = h * 16
+            frame_count = _h3_frame_count_from_video_t(t)
+        else:
+            width = int(metadata.get("width", 1344))
+            height = int(metadata.get("height", 768))
+            meta_fc = metadata.get("frame_count") or metadata.get("video_frames")
+            frame_count = int(meta_fc) if meta_fc else 124
+
+        duration = round(frame_count / FPS, 3)
+
+        # Part number
+        part_num = None
+        if "part_number" in metadata:
+            try:
+                part_num = int(metadata["part_number"])
+            except (ValueError, TypeError):
+                pass
+        if part_num is None:
+            basename = os.path.basename(resolved_path)
+            match = re.search(r"part[_-]?(\d+)", basename, re.IGNORECASE)
+            if match:
+                part_num = int(match.group(1))
+            else:
+                part_num = 1
+
+        audio_info = f"Synchronized ({audio.shape[-1]} tokens, ~{audio.shape[-1]/AUDIO_LATENT_FPS:.2f}s)" if audio is not None else "None"
+        file_size_mb = os.path.getsize(resolved_path) / (1024 * 1024)
+
+        summary_text = (
+            f"[Loaded MiniMax H3 AV Latent]\n"
+            f"File: {os.path.basename(resolved_path)}\n"
+            f"Part: {part_num}\n"
+            f"Video: {frame_count} frames ({duration:.2f}s @ {FPS}fps, {width}x{height})\n"
+            f"Audio: {audio_info}\n"
+            f"NestedTensor: {'Yes (' + str(len(all_streams)) + ' streams)' if (audio is not None or extras or was_nested) else 'No'}\n"
+            f"Size: {file_size_mb:.2f} MB"
+        )
+
+        return io.NodeOutput(
+            samples_out,
+            video_out,
+            audio_out,
+            frame_count,
+            part_num,
+            width,
+            height,
+            duration,
+            ui=PreviewText(summary_text),
+        )
+
+
+class MiniMaxH3ConcatAVLatent(io.ComfyNode):
+    """Concatenate two or three MiniMax H3 AV Latents (NestedTensor) along the temporal timeline to assemble long videos in parts."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="MiniMaxH3ConcatAVLatent",
+            display_name="Concat MiniMax H3 AV Latents",
+            category="Bus/MiniMax/Latent",
+            description=(
+                "Stitches two or three MiniMax H3 joint AV latents (NestedTensor) together along their temporal axes "
+                "(video along dim 2, audio along dim -1). Maintains synchronized video and audio lengths for full-length long video decode."
+            ),
+            search_aliases=[
+                "concat minimax h3 latents",
+                "stitch video parts",
+                "join h3 latents",
+                "concatenate av latents",
+                "merge h3 parts",
+                "combine h3 latents",
+            ],
+            inputs=[
+                io.Latent.Input("latent_a", tooltip="First MiniMax H3 AV latent (Part N)"),
+                io.Latent.Input("latent_b", tooltip="Second MiniMax H3 AV latent (Part N+1)"),
+                io.Latent.Input("latent_c", optional=True, tooltip="Optional third MiniMax H3 AV latent (Part N+2)"),
+                io.Int.Input(
+                    "trim_overlap_tokens",
+                    default=0,
+                    min=0,
+                    max=1000,
+                    step=1,
+                    tooltip="Video tokens to trim from the start of subsequent parts (latent_b, latent_c) to eliminate continuation overlap. (5 video tokens = 17 frames = 28 audio tokens).",
+                ),
+            ],
+            outputs=[
+                io.Latent.Output("samples", display_name="samples", tooltip="Combined stitched MiniMax H3 AV latent (NestedTensor)"),
+                io.Latent.Output("video_latent", display_name="video_latent", tooltip="Stitched video stream alone"),
+                io.Latent.Output("audio_latent", display_name="audio_latent", tooltip="Stitched audio stream alone"),
+                io.Int.Output("total_frame_count", display_name="total_frame_count", tooltip="Total pixel frames in stitched video"),
+                io.Float.Output("duration", display_name="duration", tooltip="Total duration in seconds at 24 fps"),
+            ],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        latent_a: Any,
+        latent_b: Any,
+        latent_c: Any = None,
+        trim_overlap_tokens: int = 0,
+        **kwargs,
+    ) -> io.NodeOutput:
+        v_a, a_a, _, _ = _extract_h3_av_streams(latent_a)
+        v_b, a_b, _, _ = _extract_h3_av_streams(latent_b)
+
+        # Check spatial dimensions
+        if v_a.shape[3:] != v_b.shape[3:]:
+            raise ValueError(
+                f"MiniMaxH3ConcatAVLatent: Spatial dimensions mismatch between latent_a ({v_a.shape[3:]}) and latent_b ({v_b.shape[3:]})"
+            )
+
+        video_list = [v_a]
+        audio_list = [a_a] if a_a is not None else []
+
+        # Trim overlap on latent_b if requested
+        if trim_overlap_tokens > 0:
+            if trim_overlap_tokens >= v_b.shape[2]:
+                raise ValueError("trim_overlap_tokens cannot be greater than or equal to latent_b video length")
+            v_b = v_b[:, :, trim_overlap_tokens:]
+            if a_b is not None:
+                trim_frames = _h3_frame_count_from_video_t(trim_overlap_tokens)
+                trim_audio_t = _h3_audio_t_at_frame(trim_frames)
+                if trim_audio_t < a_b.shape[-1]:
+                    a_b = a_b[..., trim_audio_t:]
+
+        video_list.append(v_b)
+        if a_b is not None:
+            audio_list.append(a_b)
+
+        if latent_c is not None:
+            v_c, a_c, _, _ = _extract_h3_av_streams(latent_c)
+            if v_c.shape[3:] != v_a.shape[3:]:
+                raise ValueError(
+                    f"MiniMaxH3ConcatAVLatent: Spatial dimensions mismatch between latent_a and latent_c ({v_c.shape[3:]})"
+                )
+            if trim_overlap_tokens > 0:
+                if trim_overlap_tokens >= v_c.shape[2]:
+                    raise ValueError("trim_overlap_tokens cannot be greater than or equal to latent_c video length")
+                v_c = v_c[:, :, trim_overlap_tokens:]
+                if a_c is not None:
+                    trim_frames = _h3_frame_count_from_video_t(trim_overlap_tokens)
+                    trim_audio_t = _h3_audio_t_at_frame(trim_frames)
+                    if trim_audio_t < a_c.shape[-1]:
+                        a_c = a_c[..., trim_audio_t:]
+            video_list.append(v_c)
+            if a_c is not None:
+                audio_list.append(a_c)
+
+        # Concatenate along time axis (video dim=2, audio dim=-1)
+        full_video = torch.cat(video_list, dim=2)
+        if len(audio_list) == len(video_list):
+            full_audio = torch.cat(audio_list, dim=-1)
+            combined_samples = NestedTensor((full_video, full_audio))
+            audio_out = {"samples": full_audio}
+        else:
+            full_audio = None
+            combined_samples = full_video
+            audio_out = {"samples": torch.zeros((1, 32, 2, 0))}
+
+        total_frame_count = _h3_frame_count_from_video_t(full_video.shape[2])
+        duration = round(total_frame_count / FPS, 3)
+
+        samples_out = {"samples": combined_samples}
+        video_out = {"samples": full_video}
+
+        summary_text = (
+            f"[Concatenated MiniMax H3 Latents]\n"
+            f"Parts: {len(video_list)}\n"
+            f"Total Frames: {total_frame_count} ({duration:.2f}s @ {FPS}fps)\n"
+            f"Resolution: {full_video.shape[4] * 16}x{full_video.shape[3] * 16}\n"
+            f"Audio: {'Synchronized (' + f'{full_audio.shape[-1]} tokens)' if full_audio is not None else 'None'}"
+        )
+
+        return io.NodeOutput(
+            samples_out,
+            video_out,
+            audio_out,
+            total_frame_count,
+            duration,
+            ui=PreviewText(summary_text),
+        )
+
+
+# Aliases for convenience and compatibility
+MiniMaxH3SaveAVLatent = MiniMaxH3SaveNestedLatent
+MiniMaxH3LoadAVLatent = MiniMaxH3LoadNestedLatent
+MiniMaxH3ConcatAVLatents = MiniMaxH3ConcatAVLatent
