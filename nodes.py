@@ -1352,3 +1352,330 @@ class MiniMaxH3ConcatAVLatent(io.ComfyNode):
 MiniMaxH3SaveAVLatent = MiniMaxH3SaveNestedLatent
 MiniMaxH3LoadAVLatent = MiniMaxH3LoadNestedLatent
 MiniMaxH3ConcatAVLatents = MiniMaxH3ConcatAVLatent
+
+
+# ---------------------------------------------------------------------------
+# Text Loading Nodes
+# ---------------------------------------------------------------------------
+
+class LoadText(io.ComfyNode):
+    """Load text contents from a local file as a string for prompts, scripts, or workflows."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="LoadText",
+            display_name="Load Text",
+            category="text",
+            description=(
+                "Loads text from a local file (e.g. .txt, .md, .json, .yaml, .prompt) and returns "
+                "the entire contents as a string. Features a 'Choose File' button to select files "
+                "via native file dialog, supports drag-and-drop, and automatically reloads when "
+                "the file is modified on disk."
+            ),
+            search_aliases=[
+                "load text",
+                "read text",
+                "load text file",
+                "read file",
+                "open text",
+                "open file",
+                "load prompt",
+                "read prompt",
+                "text loader",
+                "load markdown",
+                "prompt file",
+                "loadtext",
+                "h3 load text",
+            ],
+            inputs=[
+                io.String.Input(
+                    "filename",
+                    default="",
+                    tooltip=(
+                        "Path or filename of the text file to load. "
+                        "Click 'Choose File...' to select a file via native file dialog, or enter/paste an absolute or relative path."
+                    ),
+                ),
+                io.Combo.Input(
+                    "auto_reload",
+                    options=["on_file_change", "always"],
+                    default="on_file_change",
+                    tooltip=(
+                        "How auto-updating behaves:\n"
+                        "- 'on_file_change': Monitors file timestamp, size, and SHA256 content hash on disk to automatically reload whenever modified.\n"
+                        "- 'always': Forces re-reading the file from disk on every queue execution, completely bypassing cache."
+                    ),
+                ),
+            ],
+            outputs=[
+                io.String.Output(
+                    "text",
+                    display_name="STRING",
+                    tooltip="The contents of the loaded file as a string.",
+                ),
+            ],
+        )
+
+    @classmethod
+    def _clean_path(cls, path_str: str) -> str:
+        """Strip quotes, leading/trailing whitespace, and expand variables/user."""
+        if not path_str:
+            return ""
+        p = path_str.strip()
+        # Strip surrounding double quotes, single quotes, or backticks
+        if (p.startswith('"') and p.endswith('"')) or (p.startswith("'") and p.endswith("'")) or (p.startswith("`") and p.endswith("`")):
+            p = p[1:-1].strip()
+        p = os.path.expanduser(p)
+        p = os.path.expandvars(p)
+        return p
+
+    @classmethod
+    def _resolve_filepath(cls, filename: str) -> str:
+        """Resolve a filename or path across absolute paths, CWD, and ComfyUI directories."""
+        clean = cls._clean_path(filename)
+        if not clean:
+            raise ValueError("LoadText: No filename provided. Please provide a file path or click 'Choose File...' to select a file.")
+
+        # 1. Direct path check (handles absolute paths and paths relative to CWD)
+        if os.path.isfile(clean):
+            return os.path.abspath(clean)
+
+        # 2. Check relative to ComfyUI input directory
+        input_dir = None
+        try:
+            input_dir = folder_paths.get_input_directory()
+            candidate = os.path.join(input_dir, clean)
+            if os.path.isfile(candidate):
+                return os.path.abspath(candidate)
+        except Exception:
+            pass
+
+        # 3. Check relative to ComfyUI output directory
+        output_dir = None
+        try:
+            output_dir = folder_paths.get_output_directory()
+            candidate = os.path.join(output_dir, clean)
+            if os.path.isfile(candidate):
+                return os.path.abspath(candidate)
+        except Exception:
+            pass
+
+        # 4. Check relative to ComfyUI base path
+        if hasattr(folder_paths, "base_path") and folder_paths.base_path:
+            candidate = os.path.join(folder_paths.base_path, clean)
+            if os.path.isfile(candidate):
+                return os.path.abspath(candidate)
+
+        # 5. Try ComfyUI annotated path resolver
+        try:
+            annotated = folder_paths.get_annotated_filepath(clean)
+            if os.path.isfile(annotated):
+                return os.path.abspath(annotated)
+        except Exception:
+            pass
+
+        # 6. Check common subfolders in input directory (e.g. input/text/)
+        if input_dir:
+            candidate = os.path.join(input_dir, "text", clean)
+            if os.path.isfile(candidate):
+                return os.path.abspath(candidate)
+
+            base_name = os.path.basename(clean)
+            candidate = os.path.join(input_dir, base_name)
+            if os.path.isfile(candidate):
+                return os.path.abspath(candidate)
+
+        if os.path.isabs(clean):
+            raise FileNotFoundError(f"LoadText: File not found at absolute path: '{clean}'")
+
+        raise FileNotFoundError(
+            f"LoadText: File not found: '{clean}'.\n"
+            f"Checked direct path ({os.path.abspath(clean)}), "
+            f"input directory ({input_dir}), and output directory ({output_dir})."
+        )
+
+    @classmethod
+    def fingerprint_inputs(cls, filename: str = "", auto_reload: str = "on_file_change", **kwargs) -> Any:
+        """Detect file modification on disk so ComfyUI automatically reloads on change."""
+        if auto_reload == "always":
+            return float("NaN")
+
+        try:
+            fn = filename or kwargs.get("filename", "")
+            resolved = cls._resolve_filepath(fn)
+            if os.path.isfile(resolved):
+                mtime = os.path.getmtime(resolved)
+                size = os.path.getsize(resolved)
+                # For small text/prompt files (< 5MB), also hash the actual file content!
+                # This guarantees immediate detection even on network drives, OneDrive, NAS, or FAT drives.
+                if size < 5 * 1024 * 1024:
+                    with open(resolved, "rb") as f:
+                        file_hash = hashlib.sha256(f.read()).hexdigest()
+                    return f"{resolved}_{mtime}_{size}_{file_hash}"
+                return hashlib.sha256(f"{resolved}_{mtime}_{size}".encode()).hexdigest()
+        except Exception:
+            pass
+        return f"loadtext_{filename}"
+
+    @classmethod
+    def IS_CHANGED(cls, filename: str = "", auto_reload: str = "on_file_change", **kwargs) -> Any:
+        return cls.fingerprint_inputs(filename=filename, auto_reload=auto_reload, **kwargs)
+
+    @classmethod
+    def validate_inputs(cls, filename: str, auto_reload: str = "on_file_change", **kwargs) -> bool | str:
+        try:
+            cls._resolve_filepath(filename)
+            return True
+        except Exception as e:
+            return str(e)
+
+    @classmethod
+    def execute(cls, filename: str, auto_reload: str = "on_file_change", **kwargs) -> io.NodeOutput:
+        resolved_path = cls._resolve_filepath(filename)
+
+        content = None
+        encodings = ["utf-8-sig", "utf-8", "cp1252", "latin-1", "utf-16", "utf-16-le"]
+        for enc in encodings:
+            try:
+                with open(resolved_path, "r", encoding=enc) as f:
+                    content = f.read()
+                break
+            except UnicodeDecodeError:
+                continue
+
+        if content is None:
+            with open(resolved_path, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+
+        line_count = len(content.splitlines())
+        char_count = len(content)
+        file_size_kb = os.path.getsize(resolved_path) / 1024.0
+
+        preview_snippet = content[:300] + ("..." if len(content) > 300 else "")
+        summary_text = (
+            f"[Loaded Text File]\n"
+            f"File: {os.path.basename(resolved_path)}\n"
+            f"Path: {resolved_path}\n"
+            f"Size: {file_size_kb:.2f} KB | Lines: {line_count} | Characters: {char_count}\n"
+            f"Reload Mode: {auto_reload}\n"
+            f"----------------------------------------\n"
+            f"{preview_snippet}"
+        )
+
+        return io.NodeOutput(
+            content,
+            ui=PreviewText(summary_text),
+        )
+
+
+class MiniMaxH3LoadText(LoadText):
+    """Load text contents from a local file as a string (MiniMax H3 category alias)."""
+
+    @classmethod
+    def define_schema(cls):
+        schema = super().define_schema()
+        return io.Schema(
+            node_id="MiniMaxH3LoadText",
+            display_name="Load Text (MiniMax H3)",
+            category="Bus/MiniMax",
+            description=schema.description,
+            search_aliases=schema.search_aliases,
+            inputs=schema.inputs,
+            outputs=schema.outputs,
+        )
+
+
+H3LoadText = LoadText
+
+
+def _open_system_file_dialog(initial_dir: str | None = None) -> str | None:
+    """Launch native OS Open File Dialog on host machine."""
+    import sys
+    import subprocess
+
+    if sys.platform == "win32":
+        try:
+            ps_script = (
+                "[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null; "
+                "$d = New-Object System.Windows.Forms.OpenFileDialog; "
+                "$d.Filter = 'Text and Prompt Files (*.txt;*.md;*.json;*.prompt;*.yaml;*.yml;*.csv)|*.txt;*.md;*.json;*.prompt;*.yaml;*.yml;*.csv|All Files (*.*)|*.*'; "
+                "$d.Title = 'Select Text or Prompt File'; "
+            )
+            if initial_dir and os.path.isdir(initial_dir):
+                clean_dir = initial_dir.replace("'", "''")
+                ps_script += f"$d.InitialDirectory = '{clean_dir}'; "
+            ps_script += "if ($d.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.FileName }"
+            res = subprocess.run(
+                ["powershell", "-NoProfile", "-Command", ps_script],
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+            chosen = res.stdout.strip()
+            if chosen and os.path.isfile(chosen):
+                return chosen
+        except Exception:
+            pass
+
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+        chosen = filedialog.askopenfilename(
+            title="Select Text or Prompt File",
+            initialdir=initial_dir,
+            filetypes=[
+                ("Text and Prompt Files", "*.txt;*.md;*.json;*.prompt;*.yaml;*.yml;*.csv"),
+                ("All Files", "*.*"),
+            ],
+        )
+        root.destroy()
+        if chosen and os.path.isfile(chosen):
+            return chosen
+    except Exception:
+        pass
+
+    return None
+
+
+# Register server endpoints
+try:
+    from server import PromptServer
+    from aiohttp import web
+    import asyncio
+
+    if hasattr(PromptServer, "instance") and PromptServer.instance and hasattr(PromptServer.instance, "routes"):
+        @PromptServer.instance.routes.post("/h3/open_file_dialog")
+        async def open_file_dialog_endpoint(request):
+            """Opens native host file dialog and returns full filesystem path without uploading."""
+            try:
+                body = await request.json()
+            except Exception:
+                body = {}
+            current_path = body.get("current_path", "")
+            initial_dir = None
+            if current_path:
+                clean = LoadText._clean_path(current_path)
+                if os.path.exists(clean):
+                    initial_dir = os.path.dirname(clean) if os.path.isfile(clean) else clean
+
+            loop = asyncio.get_running_loop()
+            chosen = await loop.run_in_executor(None, _open_system_file_dialog, initial_dir)
+
+            if chosen and os.path.isfile(chosen):
+                size_kb = round(os.path.getsize(chosen) / 1024.0, 1)
+                return web.json_response({
+                    "path": os.path.abspath(chosen),
+                    "filename": os.path.basename(chosen),
+                    "size_kb": size_kb,
+                    "canceled": False,
+                })
+            return web.json_response({"canceled": True, "path": ""})
+
+except Exception:
+    pass
+
+

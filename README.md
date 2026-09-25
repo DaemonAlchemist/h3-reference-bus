@@ -232,6 +232,30 @@ The following nodes solve this by natively saving, loading, and concatenating Mi
 
 ---
 
+### Text Loader Node (`LoadText`)
+
+#### Load Text (`LoadText` / `MiniMaxH3LoadText`)
+- **Category**: `text` (also accessible under `Bus/MiniMax`)
+- **Search Aliases**: `Load Text`, `Read Text`, `Text File`, `Load Prompt`, `Open File`, `Text Loader`, `Load Markdown`
+- **Inputs**:
+  - `filename` (`STRING`): Path or filename of the text/markdown/prompt file to load.
+  - `auto_reload` (`COMBO`, options: `["on_file_change", "always"]`, default: `on_file_change`):
+    - `on_file_change`: Automatically detects edits by checking the file's modification time, size, and SHA256 content hash on disk.
+    - `always`: Forces re-reading the file from disk on every queue execution, unconditionally bypassing cache.
+  - **`Choose File...` Button**: Direct button widget on the node that triggers the native OS file open dialog to browse and choose any file directly from disk.
+- **Output**:
+  - `STRING`: The full text contents of the chosen file as a string, ready to connect directly to CLIP Text Encoders, prompt constructors, or any downstream text input.
+- **Key Features**:
+  - **Native File Dialog**: Click the "Choose File..." button to open the OS file chooser and populate the exact file path without tedious manual typing.
+  - **ComfyUI Desktop / Electron Native Path**: In ComfyUI Desktop, leverages `window.api.getPathForFile` to capture the true absolute OS path (e.g. `O:\Skylands\...\Seq 01 Prompt 01.txt`) directly from the OS—never creating an uploaded, detached copy.
+  - **System Dialog for Web Clients**: If opened through a browser on localhost without Electron, invokes the host OS native Open File dialog via the backend server.
+  - **Drag and Drop**: Drag and drop any `.txt`, `.md`, `.json`, `.yaml`, or `.prompt` file directly onto the node from your desktop or file manager to immediately set its full local path.
+  - **Robust Auto-Updates**: In addition to filesystem timestamps, computes a SHA256 content hash on small text/prompt files (< 5MB). Changes are immediately recognized even across network shares, mapped drives (e.g. `O:\`), NAS, or cloud-synced folders where filesystem timestamps might lag.
+  - **Multi-Encoding Support**: Transparently reads UTF-8 (with or without BOM), CP1252/Windows-1252, Latin-1, and UTF-16.
+  - **Path Cleaning**: Automatically strips leading/trailing quotes when copying paths from Windows File Explorer (`"C:\path\to\file.md"`).
+
+---
+
 ## Multi-Part Long Video Workflow Example
 
 ```

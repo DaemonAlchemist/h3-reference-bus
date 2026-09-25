@@ -1,4 +1,5 @@
 import { app } from "../../scripts/app.js";
+import { api } from "../../scripts/api.js";
 
 app.registerExtension({
     name: "MiniMaxH3.ReferenceBus",
@@ -145,6 +146,228 @@ app.registerExtension({
             }
 
             setTimeout(updateSettingsStatus, 100);
+        } else if (node.comfyClass === "LoadText" || node.comfyClass === "MiniMaxH3LoadText" || node.comfyClass === "H3LoadText") {
+            const filenameWidget = node.widgets?.find(w => w.name === "filename");
+
+            // Add Choose File button widget
+            const chooseBtn = node.addWidget(
+                "button",
+                "Choose File...",
+                "choose_file",
+                () => {
+                    openFileDialog();
+                }
+            );
+            chooseBtn.serialize = false;
+
+            // Add File Info status widget
+            const statusWidget = node.addWidget(
+                "text",
+                "file_info",
+                "No file chosen",
+                () => {},
+                { serialize: false }
+            );
+
+            if (statusWidget.inputEl) {
+                statusWidget.inputEl.readOnly = true;
+                statusWidget.inputEl.style.opacity = "0.75";
+                statusWidget.inputEl.style.fontSize = "11px";
+                statusWidget.inputEl.style.fontFamily = "monospace";
+            }
+
+            function updateStatusDisplay(val, extraInfo = "") {
+                if (!statusWidget) return;
+                if (!val || !val.trim()) {
+                    statusWidget.value = "No file chosen";
+                } else {
+                    const clean = val.trim().replace(/^["'`]|["'`]$/g, "");
+                    const base = clean.split(/[\\/]/).pop() || clean;
+                    statusWidget.value = extraInfo ? `${base} (${extraInfo})` : `Selected: ${base}`;
+                }
+                node.setDirtyCanvas(true, true);
+            }
+
+            // Sync status display if filename already populated
+            if (filenameWidget?.value) {
+                updateStatusDisplay(filenameWidget.value);
+            }
+
+            // Listen to manual changes in filename widget
+            if (filenameWidget) {
+                const origCb = filenameWidget.callback;
+                filenameWidget.callback = function(value) {
+                    if (origCb) origCb.apply(this, arguments);
+                    updateStatusDisplay(value);
+                };
+            }
+
+            function getRealLocalPath(file) {
+                if (!file) return null;
+                // 1. Comfy Desktop Electron API (window.api.getPathForFile via webUtils)
+                if (window.api && typeof window.api.getPathForFile === "function") {
+                    try {
+                        const p = window.api.getPathForFile(file);
+                        if (p && typeof p === "string" && p.length > 0) return p;
+                    } catch (e) {
+                        console.warn("[LoadText] window.api.getPathForFile error:", e);
+                    }
+                }
+                // 2. window.electronAPI
+                if (window.electronAPI && typeof window.electronAPI.getPathForFile === "function") {
+                    try {
+                        const p = window.electronAPI.getPathForFile(file);
+                        if (p && typeof p === "string" && p.length > 0) return p;
+                    } catch (e) {
+                        console.warn("[LoadText] window.electronAPI.getPathForFile error:", e);
+                    }
+                }
+                // 3. Electron webUtils
+                if (window.electron?.webUtils && typeof window.electron.webUtils.getPathForFile === "function") {
+                    try {
+                        const p = window.electron.webUtils.getPathForFile(file);
+                        if (p && typeof p === "string" && p.length > 0) return p;
+                    } catch (e) {}
+                }
+                // 4. Direct file.path (older Electron)
+                if (file.path && typeof file.path === "string" && file.path.length > 0) {
+                    return file.path;
+                }
+                return null;
+            }
+
+            async function handleSelectedFile(file) {
+                if (!file) return;
+
+                const sizeKb = (file.size / 1024).toFixed(1);
+                const localPath = getRealLocalPath(file);
+
+                if (localPath) {
+                    if (filenameWidget) {
+                        filenameWidget.value = localPath;
+                        if (filenameWidget.callback) {
+                            filenameWidget.callback(localPath);
+                        }
+                    }
+                    updateStatusDisplay(localPath, `${sizeKb} KB`);
+                    return;
+                }
+
+                // If running in browser and no local path could be resolved:
+                // Do NOT silently upload and break auto-updating!
+                alert(
+                    "Note: In a remote web browser, browser sandbox security hides the full OS file path.\n\n" +
+                    "To enable live auto-updates on file changes, please paste or type the full file path directly into the filename box."
+                );
+                if (filenameWidget) {
+                    filenameWidget.value = file.name;
+                    if (filenameWidget.callback) filenameWidget.callback(file.name);
+                }
+                updateStatusDisplay(file.name, "path sandboxed");
+            }
+
+            async function openFileDialog() {
+                // If Comfy Desktop / Electron API is present, native HTML5 file input + getPathForFile works directly
+                const hasDesktopApi = (window.api && typeof window.api.getPathForFile === "function") ||
+                                      (window.electronAPI && typeof window.electronAPI.getPathForFile === "function") ||
+                                      (window.electron && window.electron.webUtils);
+
+                if (hasDesktopApi) {
+                    let fileInput = document.getElementById("h3-loadtext-file-input");
+                    if (!fileInput) {
+                        fileInput = document.createElement("input");
+                        fileInput.id = "h3-loadtext-file-input";
+                        fileInput.type = "file";
+                        fileInput.accept = ".txt,.md,.json,.yaml,.yml,.csv,.xml,.log,.prompt,.rtf,text/*,*/*";
+                        fileInput.style.display = "none";
+                        document.body.appendChild(fileInput);
+                    }
+
+                    fileInput.value = "";
+                    fileInput.onchange = async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                            await handleSelectedFile(file);
+                        }
+                    };
+
+                    fileInput.click();
+                    return;
+                }
+
+                // If in web browser or outside Electron, ask backend server to launch host OS native file dialog!
+                try {
+                    statusWidget.value = "Opening system dialog...";
+                    node.setDirtyCanvas(true, true);
+
+                    const resp = await api.fetchApi("/h3/open_file_dialog", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ current_path: filenameWidget?.value || "" }),
+                    });
+
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        if (data.path) {
+                            if (filenameWidget) {
+                                filenameWidget.value = data.path;
+                                if (filenameWidget.callback) filenameWidget.callback(data.path);
+                            }
+                            updateStatusDisplay(data.path, data.size_kb ? `${data.size_kb} KB` : "");
+                            return;
+                        } else if (data.canceled) {
+                            updateStatusDisplay(filenameWidget?.value || "");
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn("[LoadText] Server open_file_dialog failed, trying browser picker:", err);
+                }
+
+                // Fallback to browser file input
+                let fileInput = document.getElementById("h3-loadtext-file-input");
+                if (!fileInput) {
+                    fileInput = document.createElement("input");
+                    fileInput.id = "h3-loadtext-file-input";
+                    fileInput.type = "file";
+                    fileInput.accept = ".txt,.md,.json,.yaml,.yml,.csv,.xml,.log,.prompt,.rtf,text/*,*/*";
+                    fileInput.style.display = "none";
+                    document.body.appendChild(fileInput);
+                }
+
+                fileInput.value = "";
+                fileInput.onchange = async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                        await handleSelectedFile(file);
+                    }
+                };
+
+                fileInput.click();
+            }
+
+            // Drag-and-drop file support directly onto the node
+            const origOnDropFile = node.onDropFile;
+            node.onDropFile = function(file) {
+                if (file) {
+                    handleSelectedFile(file);
+                    return true;
+                }
+                if (origOnDropFile) {
+                    return origOnDropFile.apply(this, arguments);
+                }
+                return false;
+            };
+
+            // Resize node to fit widgets nicely
+            setTimeout(() => {
+                if (node.computeSize) {
+                    const sz = node.computeSize();
+                    node.setSize([Math.max(node.size[0], sz[0], 280), Math.max(node.size[1], sz[1])]);
+                    node.setDirtyCanvas(true, true);
+                }
+            }, 60);
         }
     }
 });
+
