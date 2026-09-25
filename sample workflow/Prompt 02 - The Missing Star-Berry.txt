@@ -1,0 +1,22 @@
+subject_definitions:
+  <Subject 1>: Barnaby the Apprentice Bear is shown in <Picture 1> and his voice reference in <Audio 1>. He is an adorable, gentle young brown bear cub pastry apprentice with warm hazel eyes, soft rounded ears, a friendly smile, and fluffy chocolate-brown fur. He wears a cream-colored linen baker's apron with flour dust smudges, a blue-and-white gingham neckerchief, a puffy white baker's flat cap tilted between his ears, rolled-up woolen sleeves, charcoal trousers, and sturdy brown leather work boots.
+  <Subject 2>: Pip the Magical Hummingbird Finch is shown in <Picture 2> and his vocal chirp reference in <Audio 2>. He is a tiny, joyful avian companion with radiant iridescent plumage in shades of sky-blue and turquoise, shimmering golden-yellow wing tips, big curious dark eyes, and a delicate dark beak, leaving faint sparkling motes when fluttering rapidly.
+  <Subject 3>: The Botanical Greenhouse Bakery is shown in <Picture 3>. A luminous Victorian-style conservatory kitchen layout with terracotta tiled flooring: a heavy rustic oak baker's prep table sits anchored in the center of the room, an open arched glass window in the north wall overlooks rolling green hills, a tall wooden shelving unit with hanging copper pots lines the west wall, and hanging brass planters with flowering vanilla vines adorn the east side.
+
+summary:
+  [reference generation] Continuing from the central table of <Subject 3>, <Subject 1> finishes crimping the pie crust and searches the tabletop in comic confusion for the fruit, before the camera tilts up and west to follow <Subject 2> as Pip darts to the top storage shelf to pinpoint the glowing golden star-berry.
+
+retention_analysis:
+  <Subject 1> (appears in [Shot 1, Shot 2]): fully_preserved - Barnaby retains his round bear-cub frame, cream apron, tilted baker's cap, expressive puzzled looks, and position at the south side of the center table.
+  <Subject 2> (appears in [Shot 1, Shot 2]): fully_preserved - Pip retains his bright turquoise plumage, gold-accented wings, agile hovering, and helpful gestures.
+  <Subject 3> (appears in [Shot 1, Shot 2]): fully_preserved - the conservatory kitchen preserves the exact spatial positions of the center oak table and the tall west wall shelving unit.
+
+integrated_multimodal_description:
+  [Shot 1] Cinematic, 2D anime fantasy animation, continuing directly from the previous scene, a medium close-up frames <Subject 1> on the south side of the central prep table in <Subject 3>. Between his paws rests the newly crimped lattice pie shell. Hovering by Barnaby's right shoulder, <Subject 2> watches intently. Barnaby looks down at the pie, glances to the left and right across the table for the star-berry bowl, and finds only empty ceramic dishes. He lifts his left paw to scratch the base of his fluffy ear beneath his tilted baker's cap, his brow furrowing with gentle, puzzled confusion as he mutters: <d>[English] Now where did that big golden star-berry roll off to?</d>
+  [Shot 2] At 00:05.200, continuing the action, <Subject 2> launches upward from Barnaby's shoulder toward the west wall. The camera pans and tilts smoothly upward to the west, tracking Pip as the tiny bird zips six feet up to the topmost wooden shelf above the hanging copper pans. Pip decelerates into an eager, hovering flutter directly beside a blue-and-white porcelain dish where a plump, luminescent golden star-berry glows with warm amber light. Pip flaps his golden-tipped wings excitedly, points his slender beak down into the dish, lets out a sharp, cheerful chirp, and calls down: <d>[English] Found it, Barnaby! Up top!</d> followed immediately by an enthusiastic, melodic trill as he lands on the shelf rim. In the lower right corner of the frame, Barnaby turns his head from the center table to look up toward the west shelf with wide, relieved eyes.
+
+overall_soundscape:
+  The ceramic scrape of an empty dish being checked on the oak table, followed by the sudden zippy whistle of Pip's high-speed flight across the room. A delicate crystal chime hums from the glowing fruit, accompanied by Pip's sharp chirp, clear spoken announcement, happy concluding trill, and Barnaby's gentle gasp of realization.
+
+non_diegetic_music:
+  Inquisitive pizzicato strings transition into an upward glockenspiel run that tracks Pip's ascent to the west shelf, accented by a soft, sparkling harp glissando when the glowing star-berry comes into view.

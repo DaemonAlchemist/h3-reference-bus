@@ -1,0 +1,22 @@
+subject_definitions:
+  <Subject 1>: Barnaby the Apprentice Bear is shown in <Picture 1> and his voice reference in <Audio 1>. He is an adorable, gentle young brown bear cub pastry apprentice with warm hazel eyes, soft rounded ears, a friendly smile, and fluffy chocolate-brown fur. He wears a cream-colored linen baker's apron with flour dust smudges, a blue-and-white gingham neckerchief, a puffy white baker's flat cap tilted between his ears, rolled-up woolen sleeves, charcoal trousers, and sturdy brown leather work boots.
+  <Subject 2>: Pip the Magical Hummingbird Finch is shown in <Picture 2> and his vocal chirp reference in <Audio 2>. He is a tiny, joyful avian companion with radiant iridescent plumage in shades of sky-blue and turquoise, shimmering golden-yellow wing tips, big curious dark eyes, and a delicate dark beak, leaving faint sparkling motes when fluttering rapidly.
+  <Subject 3>: The Botanical Greenhouse Bakery is shown in <Picture 3>. A luminous Victorian-style conservatory kitchen layout with terracotta tiled flooring: a heavy rustic oak baker's prep table sits anchored in the center of the room, an open arched glass window in the north wall overlooks rolling green hills, a tall wooden shelving unit with hanging copper pots lines the west wall, and hanging brass planters with flowering vanilla vines adorn the east side.
+
+summary:
+  [reference generation] Connecting directly from the discovery, <Subject 1> walks from the center prep table to the west wall of <Subject 3>, slides an oak stool beneath the shelf, and climbs up to carefully grasp the glowing star-berry beside <Subject 2>.
+
+retention_analysis:
+  <Subject 1> (appears in [Shot 1, Shot 2]): fully_preserved - Barnaby retains his gentle bear-cub proportions, floury apron, leather boots, clumsy charm, and careful, focused demeanor.
+  <Subject 2> (appears in [Shot 1, Shot 2]): fully_preserved - Pip retains his vivid turquoise-and-gold feathers, agile flight, perching posture on the west shelf, and supportive cheering.
+  <Subject 3> (appears in [Shot 1, Shot 2]): fully_preserved - the conservatory kitchen preserves the aisle between the center oak prep table and the tall west wall shelving unit.
+
+integrated_multimodal_description:
+  [Shot 1] Cinematic, 2D Studio Ghibli-inspired animation, continuing seamlessly from the previous shot, a low-angle tracking shot frames the floor space between the central table and the west wall of <Subject 3>. <Subject 1> turns from the prep table and takes three quick strides across the terracotta tiles to the base of the west shelving unit. Looking up at <Subject 2> perched on the top shelf, Barnaby reaches down, grips a round oak stepping stool, and slides it into position directly beneath the porcelain dish. Barnaby hitches up his apron, places his left paw on a sturdy middle shelf bracket for balance, and steps his right leather boot onto the stool, his bear tail giving a steadying wag as he rises to full height.
+  [Shot 2] At 00:05.500, the shot cuts to an eye-level close-up at the top west shelf. <Subject 2> hops along the wooden edge beside the porcelain dish, letting out a fluttery, excited cheep as stage direction. <Subject 1>'s furry brown paw enters from the bottom of the frame, fingers gently cradling the warm, glowing surface of the golden star-berry. Pip lifts into a tight hover inches from Barnaby's cheek; the breeze from Pip's rapid wings lifts a white speck of flour off the tip of Barnaby's black nose. Barnaby scrunches his muzzle, chuckles warmly under his breath, and whispers: <d>[English] Easy does it... almost got it!</d> as Pip releases a soft, encouraging chirp of approval while Barnaby lifts the prize from the dish.
+
+overall_soundscape:
+  Padded boot steps across terracotta tiles, followed by the dull wooden scrape and solid thud of the oak stool settling into place. Creaking wood under Barnaby's weight precedes the rhythmic hum of Pip's hovering wings, a gentle bear snuffle, a soft crystal chime as the fruit is lifted, and Pip's cheerful celebratory chirp.
+
+non_diegetic_music:
+  A playful, gentle waltz led by bassoon and warm clarinet, punctuated by delicate triangle and celesta accents that ring softly as Barnaby securely takes hold of the star-berry.
