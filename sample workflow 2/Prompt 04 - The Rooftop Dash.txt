@@ -1,0 +1,22 @@
+subject_definitions:
+  <Subject 1>: Ren Kurogane is shown in <Picture 1> and his voice reference in <Audio 1>. He is a sharp, composed 20-year-old male anime cyberpunk shinobi mercenary with silver-white undercut hair, intense amber-gold eyes, an athletic build, and a stoic expression. He wears a weatherized slate-grey and matte-black combat haori with glowing cyan circuit line trims along his high collar and forearms, dark tactical compression armor underneath, high-frequency plasma katana sheathed across his back, and reinforced combat boots.
+  <Subject 2>: Aoi Vance is shown in <Picture 2> and her voice reference in <Audio 2>. She is an energetic, confident 19-year-old female anime cyberpunk netrunner specialist with vibrant electric-cyan hair styled in high twin-tails with glowing magenta fiber-optic tips, sharp violet eyes, and a daring smirk. She wears a cropped techwear jacket over an armored carbon bodysuit with glowing pink and cyan interface lines, fingerless data gauntlets with projecting neon interface rings, a transparent holographic visor pushed up on her forehead, and a hip-mounted cyber-deck.
+  <Subject 3>: The Neo-Shinjuku Skyscraper Helipad is shown in <Picture 3>. A high-altitude skyscraper rooftop helipad towering 80 floors above a rain-drenched cyberpunk metropolis at night. The reflective carbon tarmac is marked with glowing yellow and cyan hazard chevrons and a central illuminated landing ring. Heavy industrial exhaust vents puff white steam on the west side, a tall steel communication mast with blinking red beacons stands to the east, and massive holographic magenta and cyan kanji billboards illuminate the rainy skyline in the background.
+
+summary:
+  [reference generation] Connecting directly from the blackout on <Subject 3>, emergency red warning beacons begin flashing as <Subject 1> and <Subject 2> sprint side by side across the rain-soaked tarmac toward the southern rooftop ledge to meet their rendezvous gunship.
+
+retention_analysis:
+  <Subject 1> (appears in [Shot 1, Shot 2]): fully_preserved - Ren retains his silver-white hair, combat haori billowing in the wind, katana on his back, athletic running form, and watchful tactical focus.
+  <Subject 2> (appears in [Shot 1, Shot 2]): fully_preserved - Aoi retains her cyan twin-tails trailing behind her in the rain, techwear jacket, wrist beacon transponder, and agile sprint.
+  <Subject 3> (appears in [Shot 1, Shot 2]): fully_preserved - the rooftop helipad maintains its long runway perspective from the central landing ring toward the open southern precipice.
+
+integrated_multimodal_description:
+  [Shot 1] Cinematic, 2D anime action animation, continuing seamlessly from the terminal shutdown, a low-angle tracking shot leads ahead of <Subject 1> and <Subject 2> as they break into a full sprint across the wet tarmac of <Subject 3>. Behind them, massive steel security blast doors grind upward with flashing crimson emergency beacons, casting pulsating red light over the rain-slicked surface. Ren's black combat haori flaps dramatically in the high-altitude gale, while Aoi runs in stride beside him, her cyan twin-tails streaming in the wind. Their armored boots hammer across the yellow hazard chevrons, throwing up luminous sprays of backlit rainwater with each stride.
+  [Shot 2] At 00:05.500, the camera cuts to a dynamic tracking profile two-shot running alongside them toward the edge of the skyscraper. Heavy rain whips horizontally across their faces as the endless neon cityscape opens up directly ahead. Aoi taps the holographic interface on her left gauntlet, projecting a flashing green beacon vector into the rain above. Ren glances over his shoulder at the distant flashing alarms, then looks ahead and calls out with urgent precision: <d>[English] Transport ETA?</d> Aoi tracks the approaching signal on her HUD visor, flashing an audacious grin through the wind and rain as she shouts: <d>[English] Twelve o'clock high—right on schedule!</d>
+
+overall_soundscape:
+  Deep resonant blare of building emergency sirens echoing through the skyscraper canyon, mechanical grinding of heavy blast doors, rapid rhythmic splash and thud of combat boots dashing across rain-soaked metal tarmac, howling high-altitude gusts, and intense, adrenaline-charged dialogue.
+
+non_diegetic_music:
+  Pounding, propulsive drum and bass rhythms overlaid with soaring, heroic cyberpunk synth leads that surge in volume and intensity, conveying relentless momentum and the thrill of the escape.

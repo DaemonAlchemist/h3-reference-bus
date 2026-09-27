@@ -1,0 +1,22 @@
+subject_definitions:
+  <Subject 1>: Barnaby the Apprentice Bear is shown in <Picture 1> and his voice reference in <Audio 1>. He is an adorable, gentle young brown bear cub pastry apprentice with warm hazel eyes, soft rounded ears, a friendly smile, and fluffy chocolate-brown fur. He wears a cream-colored linen baker's apron with flour dust smudges, a blue-and-white gingham neckerchief, a puffy white baker's flat cap tilted between his ears, rolled-up woolen sleeves, charcoal trousers, and sturdy brown leather work boots.
+  <Subject 2>: Pip the Magical Hummingbird Finch is shown in <Picture 2> and his vocal chirp reference in <Audio 2>. He is a tiny, joyful avian companion with radiant iridescent plumage in shades of sky-blue and turquoise, shimmering golden-yellow wing tips, big curious dark eyes, and a delicate dark beak, leaving faint sparkling motes when fluttering rapidly.
+  <Subject 3>: The Botanical Greenhouse Bakery is shown in <Picture 3>. A luminous Victorian-style conservatory kitchen layout with terracotta tiled flooring: a heavy rustic oak baker's prep table sits anchored in the center of the room, an open arched glass window in the north wall overlooks rolling green hills, a tall wooden shelving unit with hanging copper pots lines the west wall, and hanging brass planters with flowering vanilla vines adorn the east side.
+
+summary:
+  [reference generation] At the central oak prep table of <Subject 3>, <Subject 1> and <Subject 2> engage in a lively baking montage—ladling sweet spiced berry filling into the crust and weaving an intricate pastry lattice with an open center, before Barnaby wipes his brow in satisfaction.
+
+retention_analysis:
+  <Subject 1> (appears in [Shot 1, Shot 2]): fully_preserved - Barnaby retains his bear cub apprentice design, cream apron with flour smudges, tilted baker's cap, and energetic, cheerful culinary movements.
+  <Subject 2> (appears in [Shot 1, Shot 2]): fully_preserved - Pip retains his turquoise-and-gold feathers, rapid fluttering, nimble helpers' actions, and cheerful expressions.
+  <Subject 3> (appears in [Shot 1, Shot 2]): fully_preserved - the botanical conservatory bakery preserves the central oak table, baking utensils, copper bowls, and sunlit atmosphere.
+
+integrated_multimodal_description:
+  [Shot 1] Cinematic, 2D Studio Ghibli-inspired animation, continuing directly from the morning greeting, a lively medium shot centers on <Subject 1> at the south side of the oak table in <Subject 3>. Barnaby scoops a ladle of rich, indigo-blue berry compote from a polished copper pot and swirls it into the raw pastry shell, while <Subject 2> flutters overhead carrying a slender cinnamon stick, dropping it playfully onto the prep board. Pip hovers close over the dish, his rapid wingbeats fanning a dusting of ground nutmeg and sugar crystals into a sparkling golden halo through the morning sunbeams. Barnaby chuckles with delight, adding a pinch of sugar with a jaunty flick of his furry wrist.
+  [Shot 2] At 00:05.500, the camera cuts closer to a dynamic top-down 45-degree angle. Barnaby rolls a brass fluted cutter wheel through rolled dough to slice even ribbons, his paws moving in swift, rhythmic dexterity to weave an intricate diagonal lattice across the bubbling blue filling. <Subject 2> perches on the wooden rim of the flour canister at the edge of the table, tapping his claws and bobbing his head in tempo with Barnaby's movements. Using the tines of a silver fork, Barnaby crimps the perimeter into decorative scalloped waves, deliberately leaving a circular open nest in the exact center of the lattice. Barnaby wipes the back of his furry wrist across his forehead and beams down at the pastry: <d>[English] Look at that lattice! Smooth as silk!</d> Pip flutters into a proud hover beside Barnaby's ear, letting out a bright two-tone whistle and an approving melodic trill.
+
+overall_soundscape:
+  The bubbling, squelchy dollop of berry filling hitting the crust, accompanied by the gentle clink of a copper ladle. Rapid fluttering wings, the rhythmic slice of a pastry cutter through dough, followed by the metallic tap of a fork crimping pastry edges, Barnaby's proud chuckle and dialogue, and Pip's cheerful bird trill.
+
+non_diegetic_music:
+  An energetic, syncopated pizzicato allegro with playful xylophone, light snare brushstrokes, and bouncy oboe melodies that heighten the bustling, joyful momentum of the baking montage.
