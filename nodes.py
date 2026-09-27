@@ -1589,6 +1589,41 @@ class MiniMaxH3LoadText(LoadText):
 H3LoadText = LoadText
 
 
+_LAST_VISITED_TEXT_DIR: str | None = None
+_LAST_VISITED_TEXT_CACHE_FILE: str = os.path.join(os.path.dirname(__file__), ".last_visited_text_dir")
+
+
+def _get_last_visited_text_dir() -> str | None:
+    """Retrieve the last visited folder from memory or persistent disk cache."""
+    global _LAST_VISITED_TEXT_DIR
+    if _LAST_VISITED_TEXT_DIR and os.path.isdir(_LAST_VISITED_TEXT_DIR):
+        return _LAST_VISITED_TEXT_DIR
+
+    if os.path.isfile(_LAST_VISITED_TEXT_CACHE_FILE):
+        try:
+            with open(_LAST_VISITED_TEXT_CACHE_FILE, "r", encoding="utf-8") as f:
+                saved = f.read().strip()
+                if saved and os.path.isdir(saved):
+                    _LAST_VISITED_TEXT_DIR = saved
+                    return saved
+        except Exception:
+            pass
+    return None
+
+
+def _set_last_visited_text_dir(dir_path: str | None) -> None:
+    """Update and persist the last visited folder."""
+    global _LAST_VISITED_TEXT_DIR
+    if not dir_path or not os.path.isdir(dir_path):
+        return
+    _LAST_VISITED_TEXT_DIR = os.path.abspath(dir_path)
+    try:
+        with open(_LAST_VISITED_TEXT_CACHE_FILE, "w", encoding="utf-8") as f:
+            f.write(_LAST_VISITED_TEXT_DIR)
+    except Exception:
+        pass
+
+
 def _open_system_file_dialog(initial_dir: str | None = None) -> str | None:
     """Launch native OS Open File Dialog on host machine."""
     import sys
@@ -1603,7 +1638,7 @@ def _open_system_file_dialog(initial_dir: str | None = None) -> str | None:
                 "$d.Title = 'Select Text or Prompt File'; "
             )
             if initial_dir and os.path.isdir(initial_dir):
-                clean_dir = initial_dir.replace("'", "''")
+                clean_dir = os.path.normpath(initial_dir).replace("'", "''")
                 ps_script += f"$d.InitialDirectory = '{clean_dir}'; "
             ps_script += "if ($d.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.FileName }"
             res = subprocess.run(
@@ -1650,30 +1685,56 @@ try:
     if hasattr(PromptServer, "instance") and PromptServer.instance and hasattr(PromptServer.instance, "routes"):
         @PromptServer.instance.routes.post("/h3/open_file_dialog")
         async def open_file_dialog_endpoint(request):
-            """Opens native host file dialog and returns full filesystem path without uploading."""
+            """Opens native host file dialog on the last visited folder (or default to current file's folder) and returns full filesystem path without uploading."""
             try:
                 body = await request.json()
             except Exception:
                 body = {}
+
+            client_last_dir = body.get("last_visited_dir", "")
             current_path = body.get("current_path", "")
+
+            # 1. Primary priority: Open on the last visited folder
             initial_dir = None
-            if current_path:
+            if client_last_dir and os.path.isdir(client_last_dir):
+                initial_dir = os.path.abspath(client_last_dir)
+                _set_last_visited_text_dir(initial_dir)
+            else:
+                last_saved = _get_last_visited_text_dir()
+                if last_saved and os.path.isdir(last_saved):
+                    initial_dir = last_saved
+
+            # 2. Secondary fallback (default): If no folder was previously visited, use currently selected file's folder
+            if not initial_dir and current_path:
                 clean = LoadText._clean_path(current_path)
-                if os.path.exists(clean):
-                    initial_dir = os.path.dirname(clean) if os.path.isfile(clean) else clean
+                try:
+                    resolved = LoadText._resolve_filepath(clean)
+                    if os.path.exists(resolved):
+                        initial_dir = os.path.dirname(resolved) if os.path.isfile(resolved) else resolved
+                except Exception:
+                    if os.path.exists(clean):
+                        initial_dir = os.path.dirname(clean) if os.path.isfile(clean) else clean
 
             loop = asyncio.get_running_loop()
             chosen = await loop.run_in_executor(None, _open_system_file_dialog, initial_dir)
 
             if chosen and os.path.isfile(chosen):
+                chosen_dir = os.path.dirname(os.path.abspath(chosen))
+                _set_last_visited_text_dir(chosen_dir)
                 size_kb = round(os.path.getsize(chosen) / 1024.0, 1)
                 return web.json_response({
                     "path": os.path.abspath(chosen),
                     "filename": os.path.basename(chosen),
                     "size_kb": size_kb,
+                    "last_visited_dir": chosen_dir,
                     "canceled": False,
                 })
-            return web.json_response({"canceled": True, "path": ""})
+
+            return web.json_response({
+                "canceled": True,
+                "path": "",
+                "last_visited_dir": _get_last_visited_text_dir() or initial_dir or "",
+            })
 
 except Exception:
     pass

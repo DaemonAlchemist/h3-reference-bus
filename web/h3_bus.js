@@ -236,6 +236,23 @@ app.registerExtension({
                 return null;
             }
 
+            let lastVisitedDir = "";
+            try {
+                lastVisitedDir = localStorage.getItem("h3_loadtext_last_visited_dir") || "";
+            } catch (e) {}
+
+            function recordLastVisitedDir(filePath) {
+                if (!filePath || typeof filePath !== "string") return;
+                const clean = filePath.trim().replace(/^["'`]|["'`]$/g, "");
+                const idx = Math.max(clean.lastIndexOf("/"), clean.lastIndexOf("\\"));
+                if (idx > 0) {
+                    lastVisitedDir = clean.substring(0, idx);
+                    try {
+                        localStorage.setItem("h3_loadtext_last_visited_dir", lastVisitedDir);
+                    } catch (e) {}
+                }
+            }
+
             async function handleSelectedFile(file) {
                 if (!file) return;
 
@@ -243,6 +260,7 @@ app.registerExtension({
                 const localPath = getRealLocalPath(file);
 
                 if (localPath) {
+                    recordLastVisitedDir(localPath);
                     if (filenameWidget) {
                         filenameWidget.value = localPath;
                         if (filenameWidget.callback) {
@@ -267,35 +285,7 @@ app.registerExtension({
             }
 
             async function openFileDialog() {
-                // If Comfy Desktop / Electron API is present, native HTML5 file input + getPathForFile works directly
-                const hasDesktopApi = (window.api && typeof window.api.getPathForFile === "function") ||
-                                      (window.electronAPI && typeof window.electronAPI.getPathForFile === "function") ||
-                                      (window.electron && window.electron.webUtils);
-
-                if (hasDesktopApi) {
-                    let fileInput = document.getElementById("h3-loadtext-file-input");
-                    if (!fileInput) {
-                        fileInput = document.createElement("input");
-                        fileInput.id = "h3-loadtext-file-input";
-                        fileInput.type = "file";
-                        fileInput.accept = ".txt,.md,.json,.yaml,.yml,.csv,.xml,.log,.prompt,.rtf,text/*,*/*";
-                        fileInput.style.display = "none";
-                        document.body.appendChild(fileInput);
-                    }
-
-                    fileInput.value = "";
-                    fileInput.onchange = async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                            await handleSelectedFile(file);
-                        }
-                    };
-
-                    fileInput.click();
-                    return;
-                }
-
-                // If in web browser or outside Electron, ask backend server to launch host OS native file dialog!
+                // 1. Ask backend server to launch host OS native file dialog on the last visited folder
                 try {
                     statusWidget.value = "Opening system dialog...";
                     node.setDirtyCanvas(true, true);
@@ -303,12 +293,22 @@ app.registerExtension({
                     const resp = await api.fetchApi("/h3/open_file_dialog", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ current_path: filenameWidget?.value || "" }),
+                        body: JSON.stringify({
+                            current_path: filenameWidget?.value || "",
+                            last_visited_dir: lastVisitedDir || ""
+                        }),
                     });
 
                     if (resp.ok) {
                         const data = await resp.json();
+                        if (data.last_visited_dir) {
+                            lastVisitedDir = data.last_visited_dir;
+                            try {
+                                localStorage.setItem("h3_loadtext_last_visited_dir", lastVisitedDir);
+                            } catch (e) {}
+                        }
                         if (data.path) {
+                            recordLastVisitedDir(data.path);
                             if (filenameWidget) {
                                 filenameWidget.value = data.path;
                                 if (filenameWidget.callback) filenameWidget.callback(data.path);
@@ -321,10 +321,10 @@ app.registerExtension({
                         }
                     }
                 } catch (err) {
-                    console.warn("[LoadText] Server open_file_dialog failed, trying browser picker:", err);
+                    console.warn("[LoadText] Server open_file_dialog failed, trying fallback browser picker:", err);
                 }
 
-                // Fallback to browser file input
+                // 2. Fallback to browser file input (if server dialog fails or remote headless host)
                 let fileInput = document.getElementById("h3-loadtext-file-input");
                 if (!fileInput) {
                     fileInput = document.createElement("input");
