@@ -34,6 +34,18 @@ from comfy_api.latest._ui import PreviewText
 
 H3RefBusType = io.Custom("H3_REF_BUS")
 H3VideoSettingsBusType = io.Custom("H3_VIDEO_SETTINGS_BUS")
+H3NamedRefBusType = io.Custom("H3_NAMED_REF_BUS")
+
+
+class DynamicReturnTypes(list):
+    """Dynamically returns '*' for any index to support arbitrary dynamic outputs in ComfyUI."""
+
+    def __getitem__(self, idx):
+        return "*"
+
+    def __len__(self):
+        return 10000
+
 
 
 def _extract_indexed_item(container: Any, prefix: str, index: int) -> Any:
@@ -385,6 +397,443 @@ class MiniMaxH3ExpandReferenceBus(io.ComfyNode):
             outputs.append(_extract_indexed_item(ref_audios, "ref_audio_", i))
 
         return io.NodeOutput(*outputs)
+
+
+class MiniMaxH3CreateNamedReferenceBus(io.ComfyNode):
+    """Create a Named Reference Bus bundling arbitrary multimodal references without limit."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="MiniMaxH3CreateNamedReferenceBus",
+            display_name="Create Named Reference Bus",
+            category="Bus/MiniMax",
+            description="Bundle an unlimited number of multimodal reference assets (images, audios, videos, etc.) into a single Named Reference Bus.",
+            search_aliases=["Create Named Reference Bus", "Named Reference Bus", "NamedReferenceBus", "CreateReferenceBus"],
+            accept_all_inputs=True,
+            inputs=[
+                io.Combo.Input(
+                    "bus_behavior",
+                    options=["append", "overwrite"],
+                    default="append",
+                    tooltip=(
+                        "How new references are merged when an existing bus is connected:\n"
+                        "- 'append': Appends new references after existing bus entities.\n"
+                        "- 'overwrite': Replaces existing references with matching names or slot keys."
+                    ),
+                ),
+                io.MultiType.Input(
+                    "bus",
+                    types=[H3NamedRefBusType, H3RefBusType],
+                    optional=True,
+                    tooltip="Optional existing Named Reference Bus or H3 Reference Bus to extend.",
+                ),
+                io.AnyType.Input(
+                    "entity_0",
+                    optional=True,
+                    tooltip="Reference entity (image, audio, video, etc.) to attach to the bus. Additional entity slots are added dynamically as wires are connected.",
+                ),
+            ],
+            outputs=[H3NamedRefBusType.Output("bus", display_name="bus")],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        bus_behavior: str = "append",
+        bus: dict[str, Any] | None = None,
+        entity_names: str | list[str] | None = None,
+        **kwargs,
+    ) -> io.NodeOutput:
+        bus = bus or {}
+
+        # 1. Inherit incoming entities from upstream bus
+        inherited_entities: list[dict[str, Any]] = []
+        if "entities" in bus:
+            inherited_entities = [dict(e) for e in bus.get("entities", [])]
+        elif "ordered" in bus:
+            inherited_entities = [{"name": f"entity_{i+1}", "value": v} for i, v in enumerate(bus.get("ordered", []))]
+        else:
+            # Fallback for legacy H3 reference bus structure
+            for k, v in bus.get("ref_images", {}).items():
+                if v is not None:
+                    inherited_entities.append({"name": k, "value": v, "type": "IMAGE"})
+            for k, v in bus.get("ref_videos", {}).items():
+                if v is not None:
+                    inherited_entities.append({"name": k, "value": v, "type": "IMAGE"})
+            for k, v in bus.get("ref_audios", {}).items():
+                if v is not None:
+                    inherited_entities.append({"name": k, "value": v, "type": "AUDIO"})
+
+        # 2. Parse entity names passed from UI canvas
+        name_list: list[str] = []
+        if isinstance(entity_names, str):
+            try:
+                name_list = json.loads(entity_names)
+            except Exception:
+                name_list = [s.strip() for s in entity_names.split(",") if s.strip()]
+        elif isinstance(entity_names, list):
+            name_list = list(entity_names)
+
+        # 3. Collect attached inputs from kwargs sorted numerically
+        def _sort_key(key: str) -> tuple[int, int, str]:
+            if key.startswith("entity_"):
+                suffix = key[len("entity_"):]
+                if suffix.isdigit():
+                    return (0, int(suffix), "")
+            elif key.startswith("ref_image_"):
+                suffix = key[len("ref_image_"):]
+                if suffix.isdigit():
+                    return (1, int(suffix), "")
+            elif key.startswith("ref_video_"):
+                suffix = key[len("ref_video_"):]
+                if suffix.isdigit():
+                    return (2, int(suffix), "")
+            elif key.startswith("ref_audio_"):
+                suffix = key[len("ref_audio_"):]
+                if suffix.isdigit():
+                    return (3, int(suffix), "")
+            return (4, 0, key)
+
+        sorted_kwargs = sorted(
+            [
+                (k, v)
+                for k, v in kwargs.items()
+                if v is not None and not k.startswith("_") and k not in ("bus_behavior", "bus", "entity_names")
+            ],
+            key=lambda item: _sort_key(item[0]),
+        )
+
+        new_entities: list[dict[str, Any]] = []
+        for idx, (k, val) in enumerate(sorted_kwargs):
+            ent_name = name_list[idx] if idx < len(name_list) and name_list[idx] else k
+            new_entities.append({"name": ent_name, "value": val, "key": k})
+
+        # 4. Merge entities according to bus_behavior
+        final_entities: list[dict[str, Any]] = []
+        if bus_behavior == "append":
+            final_entities = inherited_entities + new_entities
+        else:
+            merged_map: dict[str, dict[str, Any]] = {}
+            for item in inherited_entities:
+                merged_map[item.get("name", "")] = item
+            for item in new_entities:
+                merged_map[item.get("name", item.get("key", ""))] = item
+            final_entities = list(merged_map.values())
+
+        # Disambiguate duplicate entity names if any
+        seen_names: dict[str, int] = {}
+        for ent in final_entities:
+            raw_name = ent.get("name", "entity")
+            count = seen_names.get(raw_name, 0)
+            seen_names[raw_name] = count + 1
+            if count > 0:
+                dot_idx = raw_name.rfind(".")
+                if dot_idx > 0:
+                    ent["name"] = f"{raw_name[:dot_idx]} ({count + 1}){raw_name[dot_idx:]}"
+                else:
+                    ent["name"] = f"{raw_name} ({count + 1})"
+
+        # 5. Build output bus dict
+        out_bus: dict[str, Any] = {
+            "entities": final_entities,
+            "ordered": [e["value"] for e in final_entities],
+            "by_name": {e["name"]: e["value"] for e in final_entities},
+            "ref_images": dict(bus.get("ref_images", {})),
+            "ref_videos": dict(bus.get("ref_videos", {})),
+            "ref_video_audios": dict(bus.get("ref_video_audios", {})),
+            "ref_audios": dict(bus.get("ref_audios", {})),
+        }
+
+        # Populate legacy slots for any tensor/audio entities for seamless backward-compatibility
+        img_idx = len(out_bus["ref_images"])
+        aud_idx = len(out_bus["ref_audios"])
+        for e in new_entities:
+            v = e["value"]
+            if hasattr(v, "shape") and len(v.shape) == 4 and img_idx < 9:
+                out_bus["ref_images"][f"ref_image_{img_idx}"] = v
+                img_idx += 1
+            elif isinstance(v, dict) and "waveform" in v and aud_idx < 3:
+                out_bus["ref_audios"][f"ref_audio_{aud_idx}"] = v
+                aud_idx += 1
+
+        # Visual preview text on canvas
+        entity_labels = [e["name"] for e in final_entities]
+        preview_lines = [f"- {name}" for name in entity_labels[:10]]
+        if len(entity_labels) > 10:
+            preview_lines.append(f"... and {len(entity_labels) - 10} more")
+        summary_text = (
+            f"[Named Reference Bus]\n"
+            f"Mode: {bus_behavior}\n"
+            f"Incoming: {len(inherited_entities)} entities\n"
+            f"Added: +{len(new_entities)} entities\n"
+            f"Total Bus: {len(final_entities)} entities\n"
+            + ("\n".join(preview_lines) if preview_lines else "(No entities attached)")
+        )
+
+        return io.NodeOutput(out_bus, ui=PreviewText(summary_text))
+
+
+class CreateNamedReferenceBus(MiniMaxH3CreateNamedReferenceBus):
+    """Create a Named Reference Bus bundling arbitrary multimodal references without limit (alias)."""
+
+    @classmethod
+    def define_schema(cls):
+        schema = super().define_schema()
+        return io.Schema(
+            node_id="CreateNamedReferenceBus",
+            display_name="Create Named Reference Bus",
+            category="Bus/MiniMax",
+            description=schema.description,
+            search_aliases=schema.search_aliases,
+            accept_all_inputs=True,
+            inputs=schema.inputs,
+            outputs=schema.outputs,
+        )
+
+
+class MiniMaxH3ExpandNamedReferenceBus(io.ComfyNode):
+    """Expand a Named Reference Bus into individual outputs for each attached entity."""
+
+    _RETURN_TYPES = DynamicReturnTypes()
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="MiniMaxH3ExpandNamedReferenceBus",
+            display_name="Expand Named Reference Bus",
+            category="Bus/MiniMax",
+            description="Unpack a Named Reference Bus into individual outputs for every attached entity, labeled by filename.",
+            search_aliases=["Expand Named Reference Bus", "Named Reference Bus", "NamedReferenceBus", "ExpandReferenceBus"],
+            inputs=[
+                io.MultiType.Input(
+                    "bus",
+                    types=[H3NamedRefBusType, H3RefBusType],
+                    tooltip="Named Reference Bus to expand into individual entity outputs.",
+                ),
+            ],
+            outputs=[],
+        )
+
+    @classmethod
+    def execute(cls, bus: dict[str, Any] | None = None, **kwargs) -> io.NodeOutput:
+        bus = bus or {}
+        items: list[Any] = []
+        if "entities" in bus:
+            items = [e["value"] for e in bus["entities"]]
+        elif "ordered" in bus:
+            items = list(bus["ordered"])
+        else:
+            items = (
+                list(bus.get("ref_images", {}).values())
+                + list(bus.get("ref_videos", {}).values())
+                + list(bus.get("ref_video_audios", {}).values())
+                + list(bus.get("ref_audios", {}).values())
+            )
+
+        if not items:
+            return io.NodeOutput(None)
+        return io.NodeOutput(*items)
+
+
+class ExpandNamedReferenceBus(MiniMaxH3ExpandNamedReferenceBus):
+    """Expand a Named Reference Bus into individual outputs for each attached entity (alias)."""
+
+    _RETURN_TYPES = DynamicReturnTypes()
+
+    @classmethod
+    def define_schema(cls):
+        schema = super().define_schema()
+        return io.Schema(
+            node_id="ExpandNamedReferenceBus",
+            display_name="Expand Named Reference Bus",
+            category="Bus/MiniMax",
+            description=schema.description,
+            search_aliases=schema.search_aliases,
+            inputs=schema.inputs,
+            outputs=schema.outputs,
+        )
+
+
+class MiniMaxH3MapNamedReferenceBus(io.ComfyNode):
+    """Map a Named Reference Bus into a standard MiniMax H3 Reference Bus via explicit slot mapping."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="MiniMaxH3MapNamedReferenceBus",
+            display_name="Map Named Bus to H3 Reference Bus",
+            category="Bus/MiniMax",
+            description="Map entities from an incoming Named Reference Bus into standard MiniMax H3 reference slots (<Picture 1..9>, <Video 1..3>, <Audio 1..3>).",
+            search_aliases=["Map Named Reference Bus", "Named Reference Bus to H3", "MapNamedReferenceBus", "NamedBusToH3Bus"],
+            inputs=[
+                io.MultiType.Input(
+                    "bus",
+                    types=[H3NamedRefBusType, H3RefBusType],
+                    tooltip="Incoming Named Reference Bus to map to standard H3 reference slots.",
+                ),
+                io.String.Input(
+                    "mapping",
+                    default="{}",
+                    tooltip="Slot mapping configuration in JSON format. Use the 'Map Slots...' button to configure interactively.",
+                ),
+            ],
+            outputs=[H3RefBusType.Output("bus", display_name="bus")],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        bus: dict[str, Any] | None = None,
+        mapping: str | dict[str, str] | None = None,
+        **kwargs,
+    ) -> io.NodeOutput:
+        bus = bus or {}
+
+        # 1. Build entities lookup from incoming bus
+        entities_by_name: dict[str, Any] = {}
+        ordered_entities: list[dict[str, Any]] = []
+
+        if "entities" in bus:
+            for item in bus["entities"]:
+                name = item.get("name", "")
+                val = item.get("value")
+                if name and val is not None:
+                    entities_by_name[name] = val
+                    ordered_entities.append(item)
+        elif "by_name" in bus:
+            entities_by_name = dict(bus["by_name"])
+            ordered_entities = [{"name": k, "value": v} for k, v in entities_by_name.items()]
+        else:
+            # Fallback for standard H3 reference bus inputs
+            for prefix in ("ref_images", "ref_videos", "ref_video_audios", "ref_audios"):
+                for k, v in bus.get(prefix, {}).items():
+                    if v is not None:
+                        entities_by_name[k] = v
+                        ordered_entities.append({"name": k, "value": v})
+
+        # 2. Parse slot mapping
+        slot_map: dict[str, str] = {}
+        if isinstance(mapping, str):
+            try:
+                slot_map = json.loads(mapping) if mapping.strip() else {}
+            except Exception:
+                pass
+        elif isinstance(mapping, dict):
+            slot_map = dict(mapping)
+
+        out_bus: dict[str, Any] = {
+            "ref_images": {},
+            "ref_videos": {},
+            "ref_video_audios": {},
+            "ref_audios": {},
+        }
+
+        # 3. Apply explicit mapping if configured
+        if slot_map:
+            # Images (<Picture 1> .. <Picture 9>)
+            for i in range(9):
+                key = f"ref_image_{i}"
+                target_name = slot_map.get(key)
+                if target_name and target_name in entities_by_name:
+                    out_bus["ref_images"][key] = entities_by_name[target_name]
+
+            # Videos (<Video 1> .. <Video 3>)
+            for i in range(3):
+                key = f"ref_video_{i}"
+                target_name = slot_map.get(key)
+                if target_name and target_name in entities_by_name:
+                    out_bus["ref_videos"][key] = entities_by_name[target_name]
+
+            # Video Soundtracks (<Video 1 Soundtrack> .. <Video 3 Soundtrack>)
+            for i in range(3):
+                key = f"ref_video_audio_{i}"
+                target_name = slot_map.get(key)
+                if target_name and target_name in entities_by_name:
+                    out_bus["ref_video_audios"][key] = entities_by_name[target_name]
+
+            # Standalone Audios (<Audio 1> .. <Audio 3>)
+            for i in range(3):
+                key = f"ref_audio_{i}"
+                target_name = slot_map.get(key)
+                if target_name and target_name in entities_by_name:
+                    out_bus["ref_audios"][key] = entities_by_name[target_name]
+        else:
+            # Automatic mapping fallback when no explicit mapping is set
+            img_idx = 0
+            aud_idx = 0
+            vid_idx = 0
+            for item in ordered_entities:
+                v = item.get("value")
+                if v is None:
+                    continue
+                name_lower = str(item.get("name", "")).lower()
+                is_audio = (
+                    item.get("type") == "AUDIO"
+                    or (isinstance(v, dict) and "waveform" in v)
+                    or any(name_lower.endswith(ext) for ext in (".flac", ".mp3", ".wav", ".ogg", ".m4a"))
+                )
+                is_video = (
+                    item.get("type") == "VIDEO"
+                    or any(name_lower.endswith(ext) for ext in (".mp4", ".mov", ".webm", ".mkv"))
+                    or (hasattr(v, "shape") and len(v.shape) == 4 and v.shape[0] > 1 and "video" in name_lower)
+                )
+
+                if is_audio:
+                    if aud_idx < 3:
+                        out_bus["ref_audios"][f"ref_audio_{aud_idx}"] = v
+                        aud_idx += 1
+                elif is_video:
+                    if vid_idx < 3:
+                        out_bus["ref_videos"][f"ref_video_{vid_idx}"] = v
+                        vid_idx += 1
+                else:
+                    if img_idx < 9:
+                        out_bus["ref_images"][f"ref_image_{img_idx}"] = v
+                        img_idx += 1
+
+        out_bus["entities"] = ordered_entities
+        out_bus["by_name"] = entities_by_name
+
+        total_img = len(out_bus["ref_images"])
+        total_vid = len(out_bus["ref_videos"])
+        total_va = len(out_bus["ref_video_audios"])
+        total_aud = len(out_bus["ref_audios"])
+
+        img_tag = f"<Picture 1..{total_img}>" if total_img > 1 else ("<Picture 1>" if total_img == 1 else "none")
+        vid_tag = f"<Video 1..{total_vid}>" if total_vid > 1 else ("<Video 1>" if total_vid == 1 else "none")
+        aud_tag = f"<Audio 1..{total_aud}>" if total_aud > 1 else ("<Audio 1>" if total_aud == 1 else "none")
+
+        summary_text = (
+            f"[Mapped H3 Reference Bus]\n"
+            f"Images: {total_img} ({img_tag})\n"
+            f"Videos: {total_vid} ({vid_tag})\n"
+            f"Soundtracks: {total_va}\n"
+            f"Audios: {total_aud} ({aud_tag})"
+        )
+
+        return io.NodeOutput(out_bus, ui=PreviewText(summary_text))
+
+
+class MapNamedReferenceBus(MiniMaxH3MapNamedReferenceBus):
+    """Map a Named Reference Bus into a standard MiniMax H3 Reference Bus (alias)."""
+
+    @classmethod
+    def define_schema(cls):
+        schema = super().define_schema()
+        return io.Schema(
+            node_id="MapNamedReferenceBus",
+            display_name="Map Named Bus to H3 Reference Bus",
+            category="Bus/MiniMax",
+            description=schema.description,
+            search_aliases=schema.search_aliases,
+            inputs=schema.inputs,
+            outputs=schema.outputs,
+        )
+
+
+NamedBusToH3Bus = MapNamedReferenceBus
+
 
 
 class MiniMaxH3CreateVideoSettingsBus(io.ComfyNode):

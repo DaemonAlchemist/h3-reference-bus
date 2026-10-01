@@ -42,6 +42,45 @@ Connecting all of these individual sockets across large workflows or subgraphs i
 
 ---
 
+### Named Reference Bus Pair (`H3_NAMED_REF_BUS`)
+
+#### 1b. Create Named Reference Bus (`CreateNamedReferenceBus` / `MiniMaxH3CreateNamedReferenceBus`)
+- **Category**: `Bus/MiniMax`
+- **Inputs**:
+  - `bus_behavior` *(Combo: `append` vs `overwrite`, default `append`)*: How new references are merged when an existing bus is connected.
+  - `bus` *(Optional `H3_NAMED_REF_BUS` / `H3_REF_BUS`)*: Connect an existing reference bus to extend or override references.
+  - `entity_0` *(Wildcard `*`)*: Multimodal reference entity input (image, audio, video, text, etc.). As entities are attached, new entity slots are added dynamically with **no limit** on the number of entities.
+- **Output**:
+  - `bus` (`H3_NAMED_REF_BUS`): Bundled named reference bus carrying all attached entities.
+
+#### 2b. Expand Named Reference Bus (`ExpandNamedReferenceBus` / `MiniMaxH3ExpandNamedReferenceBus`)
+- **Category**: `Bus/MiniMax`
+- **Input**:
+  - `bus` (`H3_NAMED_REF_BUS` / `H3_REF_BUS`): Single incoming reference bus.
+- **Outputs**:
+  - One output for every attached entity, with a label matching the attached filename (just the filename, no directories).
+  - Outputs update automatically in real time whenever attached to a corresponding create bus node, or whenever entities are attached or detached from the corresponding create bus node.
+
+#### 3b. Map Named Bus to H3 Reference Bus (`MapNamedReferenceBus` / `MiniMaxH3MapNamedReferenceBus`)
+- **Category**: `Bus/MiniMax`
+- **Description**: Bridges the flexible, unlimited Named Reference Bus to the standard MiniMax H3 Reference Bus (`H3_REF_BUS`).
+- **Inputs**:
+  - `bus` (`H3_NAMED_REF_BUS` / `H3_REF_BUS`): Incoming named reference bus.
+  - `mapping` (`STRING`, default `"{}"`): Internal JSON map storing slot assignments.
+- **Interactive Popup Mapper**:
+  - Click the **`Map Slots...`** button directly on the node to open an interactive modal window.
+  - Visually assign any named entity from the incoming bus into standard MiniMax H3 prompt slots:
+    - **Reference Images (Up to 9)**: `<Picture 1>` .. `<Picture 9>`
+    - **Reference Videos (Up to 3)**: `<Video 1>` .. `<Video 3>`
+    - **Video Soundtracks (Up to 3)**: `<Video 1 Soundtrack>` .. `<Video 3 Soundtrack>`
+    - **Standalone Audios (Up to 3)**: `<Audio 1>` .. `<Audio 3>`
+  - **Auto-Map by Type**: Automatically categorizes entities by type/extension and fills available image, video, and audio slots.
+  - **Clear All**: Clears all assigned slots in one click.
+  - **Apply & Save**: Saves your mapping and instantly updates the status text on the canvas.
+- **Output**:
+  - `bus` (`H3_REF_BUS`): Standard MiniMax H3 reference bus completely compatible with `MiniMaxH3ExpandReferenceBus`, `MiniMaxH3GenerateVideoPrompt`, and all standard H3 nodes.
+
+
 ### Video Settings Bus Pair (`H3_VIDEO_SETTINGS_BUS`)
 
 #### 3. Create MiniMax H3 Video Settings Bus (`MiniMaxH3CreateVideoSettingsBus`)
