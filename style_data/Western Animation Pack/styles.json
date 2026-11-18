@@ -1,0 +1,87 @@
+{
+  "Golden Age Disney Cel Animation": {
+    "prompt": "classic Golden Age Disney animation aesthetic, Snow White and Pinocchio style, lush multiplane camera depth, hand-inked cels, rich painterly gouache background art, organic soft watercolor gradients, rotoscoped realism",
+    "negative": "modern 3d cgi, harsh digital lines, flat vector, photographic live action"
+  },
+  "1930s Fleischer Rubber Hose Cartoon": {
+    "prompt": "1930s Fleischer Studios rubber hose cartoon aesthetic, Cuphead and Popeye inspired, pie eyes, bendy noodle limbs, bouncy rhythmic animation anatomy, vintage monochrome sepia tone, classic hand-inked cel art",
+    "negative": "modern 3d, realistic human proportions, sharp digital vector, color photographic"
+  },
+  "Looney Tunes Slapstick Animation": {
+    "prompt": "classic Looney Tunes and Merrie Melodies animation aesthetic, Chuck Jones and Maurice Noble style, bold expressive character exaggeration, squash and stretch physics, vibrant modernist gouache backgrounds, dynamic comedy staging",
+    "negative": "somber realistic, photorealistic, 3d render, gritty live action"
+  },
+  "Arcane / Fortiche Painterly 2.5D": {
+    "prompt": "Fortiche Studio animation aesthetic, League of Legends: Arcane style, revolutionary painterly 2.5D animation art, visible expressive textured brushstrokes, textured digital matte painting, dramatic cinematic edge lighting, rich stylized character anatomy",
+    "negative": "flat 2d cartoon, generic 3d cgi, glossy plastic, photorealistic live action"
+  },
+  "Spider-Verse Comic Book 3D": {
+    "prompt": "Spider-Verse animation aesthetic, Sony Pictures Animation style, stylized comic book 3D rendering, visible Ben-Day halftone screen dots, offset CMYK print registration, expressive hand-drawn ink contours on 3D models, dynamic pop-art urban energy",
+    "negative": "smooth generic 3d, realistic live action photo, flat vector illustration"
+  },
+  "Bruce Timm Comic Noir (Batman TAS)": {
+    "prompt": "Bruce Timm Dark Deco animation aesthetic, Batman: The Animated Series and Justice League style, painted on black paper, high-contrast angular shadows, sleek art deco silhouettes, minimalist bold character draftsmanship, moody atmospheric crime noir",
+    "negative": "bright pastel cartoon, hyper-detailed 3d, watercolor washes, cheerful comedy"
+  },
+  "Genndy Tartakovsky Bold Graphic Action": {
+    "prompt": "Genndy Tartakovsky animation aesthetic, Samurai Jack and Primal style, bold lineless graphic shapes and thick dynamic contours, dramatic geometric staging, high-contrast flat color planes, legendary cinematic action framing",
+    "negative": "soft blended gradients, photorealistic 3d, fuzzy textures, generic anime"
+  },
+  "Disney Renaissance 90s Grandeur": {
+    "prompt": "90s Disney Renaissance feature animation aesthetic, Beauty and the Beast and Lion King style, CAPS digital ink and paint, rich sweeping theatrical staging, masterwork hand-painted gouache background vistas, expressive character draftsmanship",
+    "negative": "crude flash animation, cheap 3d, low resolution, grimdark gritty"
+  },
+  "Don Bluth Dark Epic Animation": {
+    "prompt": "Don Bluth feature animation aesthetic, The Secret of NIMH and Land Before Time style, intense theatrical backlit optical glows, rich dramatic shadows, gritty atmospheric texture, emotive classical high-drama hand-drawn cel craftsmanship",
+    "negative": "flat vector, sterile 3d cgi, bright comedy cartoon, washed out"
+  },
+  "Over the Garden Wall Storybook Folk": {
+    "prompt": "Over the Garden Wall animation aesthetic, vintage Victorian children's storybook illustration, rich autumn foliage, antique postcard patina, folk-art Americana, warm painterly gouache and watercolor textures, eerie nostalgic warmth",
+    "negative": "neon futuristic, glossy 3d, slick vector, modern urban"
+  },
+  "Laika Gothic Stop-Motion": {
+    "prompt": "Laika Studios handcrafted stop-motion animation aesthetic, Coraline and ParaNorman style, tactile physical puppet armatures, visible micro-fabric textures, sculpted facial replacement plates, miniature physical studio lighting, quirky gothic eccentricity",
+    "negative": "smooth digital cgi, 2d cartoon flat, live action photograph"
+  },
+  "Aardman Tactile Plasticine Claymation": {
+    "prompt": "Aardman Animations claymation aesthetic, Wallace and Gromit style, hand-sculpted plasticine clay with visible artisan thumbprints, physical miniature British set dressing, warm physical studio bounce lighting, charming eccentric stop-motion character design",
+    "negative": "sleek digital cgi, flat vector, smooth computer graphics"
+  },
+  "Puss in Boots: The Last Wish Stylized 3D": {
+    "prompt": "DreamWorks Puss in Boots: The Last Wish animation aesthetic, fairy-tale painterly 3D animation, hand-brushed oil painting textures, snappy stylized anime-influenced keyframe poses, vibrant saturated storybook color palette, dynamic action impressionism",
+    "negative": "photorealistic cgi, flat untextured 3d, desaturated gritty"
+  },
+  "Pixar Emotional Feature 3D": {
+    "prompt": "Pixar Animation Studios feature film aesthetic, Coco and Up style, pristine physically-based rendering, rich subsurface skin scattering, vibrant emotional color scripting, lush tactile fabric and environmental shaders on appealing stylized character anatomy",
+    "negative": "low budget cgi, flat 2d, crude uncanny valley, blurry"
+  },
+  "DreamWorks Cinematic Feature 3D": {
+    "prompt": "DreamWorks Animation feature aesthetic, How to Train Your Dragon style, sweeping cinematic natural environments, majestic volumetric clouds, tactile leather and metal textures, dynamic camera flight choreography, expressive stylized character design",
+    "negative": "cheap plastic cgi, flat lighting, 2d vector, low resolution"
+  },
+  "CalArts / Modern Whimsical 2D": {
+    "prompt": "contemporary whimsical 2D animation aesthetic, Adventure Time and Steven Universe style, soft rounded noodle anatomy, pastel watercolor background scenery, gentle cosmic sparkles, charming indie cartoon design",
+    "negative": "grimdark violent, realistic anatomy, heavy 3d cgi, harsh mecha"
+  },
+  "Gravity Falls Mystery Adventure 2D": {
+    "prompt": "Gravity Falls and Owl House animation aesthetic, rich Pacific Northwest mystery vibes, warm autumnal forest backgrounds, detailed hand-painted scenery, charming expressive character linework, adventurous nostalgic storybook feel",
+    "negative": "cold sci-fi, sterile 3d, realistic photograph, monochrome"
+  },
+  "UPA Mid-Century Modern Graphic": {
+    "prompt": "1950s UPA modernist animation aesthetic, Gerald McBoing-Boing and Pink Panther style, flat abstract geometric shapes, bold primary color blocking, witty asymmetrical graphic backgrounds, clean vintage mid-century modern linework",
+    "negative": "photorealistic, heavy shading, 3d cgi, gradient airbrush"
+  },
+  "Heavy Metal 80s Sci-Fi Fantasy": {
+    "prompt": "1980s Heavy Metal animated cult movie aesthetic, Moebius inspired fantasy illustration, rich airbrushed color gradients, cosmic nebulae, ornate rotoscoped warriors and spacecraft, gritty hand-drawn dark fantasy pulp art",
+    "negative": "cutesy cartoon, modern clean vector, flat children's book"
+  },
+  "Ralph Bakshi Gritty Adult Animation": {
+    "prompt": "Ralph Bakshi 1970s underground animation aesthetic, Wizards and Lord of the Rings style, raw rotoscoped ink outlines, gritty urban comix linework, psychedelic watercolor and gouache washes, counter-culture dark fantasy atmosphere",
+    "negative": "clean corporate Disney, sterile digital vector, shiny 3d"
+  },
+  "Hanna-Barbera 1960s Saturday Morning": {
+    "prompt": "classic 1960s Hanna-Barbera Saturday morning cartoon aesthetic, Flintstones and Scooby-Doo style, hand-painted watercolor background scenery, retro mid-century modern furnishings, crisp ink outlines, nostalgic limited cel animation charm",
+    "negative": "modern 3d, gritty realistic, complex cgi, noisy"
+  }
+}
+

@@ -19,7 +19,7 @@ Connecting all of these individual sockets across large workflows or subgraphs i
 ### Reference Bus Pair (`H3_REF_BUS`)
 
 #### 1. Create MiniMax H3 Reference Bus (`MiniMaxH3CreateReferenceBus`)
-- **Category**: `Bus/MiniMax`
+- **Category**: `ATP/Bus/Reference`
 - **Inputs**:
   - `bus_behavior` *(Combo: `append` vs `overwrite`, default `append`)*: Automatically increments reference indices when an incoming bus is connected.
   - `bus` *(Optional `H3_REF_BUS`)*: Connect an existing reference bus to extend or override references.
@@ -31,7 +31,7 @@ Connecting all of these individual sockets across large workflows or subgraphs i
   - `bus` (`H3_REF_BUS`): Bundled multimodal reference bus.
 
 #### 2. Expand MiniMax H3 Reference Bus (`MiniMaxH3ExpandReferenceBus`)
-- **Category**: `Bus/MiniMax`
+- **Category**: `ATP/Bus/Reference`
 - **Input**:
   - `bus` (`H3_REF_BUS`): Single incoming reference bus.
 - **Outputs** (18 distinct sockets):
@@ -42,10 +42,34 @@ Connecting all of these individual sockets across large workflows or subgraphs i
 
 ---
 
+### Image Reference Bus Pair (`H3_IMAGE_REF_BUS`)
+
+Tailored specifically for **MiniMax H3 Image models**, supporting up to sixteen reference images without video or audio overhead.
+
+#### 1a. Create MiniMax H3 Image Reference Bus (`MiniMaxH3CreateImageReferenceBus` / `CreateImageReferenceBus`)
+- **Category**: `ATP/Bus/Reference`
+- **Description**: Bundles up to 16 reference images for MiniMax H3 Image workflows into a single clean bus connection.
+- **Inputs**:
+  - `bus_behavior` *(Combo: `append` vs `overwrite`, default `append`)*: Automatically increments indices when an existing bus is connected.
+  - `bus` *(Optional `H3_IMAGE_REF_BUS` / `H3_REF_BUS` / `H3_NAMED_REF_BUS`)*: Connect an existing image reference bus or general reference bus to extend or override references.
+  - `ref_images` *(Autogrow, up to 16 `IMAGE` inputs)*: Reference images for `<Picture 1>` through `<Picture 16>`.
+- **Output**:
+  - `bus` (`H3_IMAGE_REF_BUS`): Bundled image reference bus.
+
+#### 2a. Expand MiniMax H3 Image Reference Bus (`MiniMaxH3ExpandImageReferenceBus` / `ExpandImageReferenceBus`)
+- **Category**: `ATP/Bus/Reference`
+- **Description**: Unpacks a MiniMax H3 image reference bus into 16 individual reference image sockets.
+- **Input**:
+  - `bus` (`H3_IMAGE_REF_BUS` / `H3_REF_BUS` / `H3_NAMED_REF_BUS`): Single incoming image reference bus.
+- **Outputs** (16 distinct image sockets):
+  - `ref_image_1 (<Picture 1>)` .. `ref_image_16 (<Picture 16>)` (`IMAGE`)
+
+---
+
 ### Named Reference Bus Pair (`H3_NAMED_REF_BUS`)
 
 #### 1b. Create Named Reference Bus (`CreateNamedReferenceBus` / `MiniMaxH3CreateNamedReferenceBus`)
-- **Category**: `Bus/MiniMax`
+- **Category**: `ATP/Bus/Named`
 - **Inputs**:
   - `bus_behavior` *(Combo: `append` vs `overwrite`, default `append`)*: How new references are merged when an existing bus is connected.
   - `bus` *(Optional `H3_NAMED_REF_BUS` / `H3_REF_BUS`)*: Connect an existing reference bus to extend or override references.
@@ -54,7 +78,7 @@ Connecting all of these individual sockets across large workflows or subgraphs i
   - `bus` (`H3_NAMED_REF_BUS`): Bundled named reference bus carrying all attached entities.
 
 #### 2b. Expand Named Reference Bus (`ExpandNamedReferenceBus` / `MiniMaxH3ExpandNamedReferenceBus`)
-- **Category**: `Bus/MiniMax`
+- **Category**: `ATP/Bus/Named`
 - **Input**:
   - `bus` (`H3_NAMED_REF_BUS` / `H3_REF_BUS`): Single incoming reference bus.
 - **Outputs**:
@@ -62,7 +86,7 @@ Connecting all of these individual sockets across large workflows or subgraphs i
   - Outputs update automatically in real time whenever attached to a corresponding create bus node, or whenever entities are attached or detached from the corresponding create bus node.
 
 #### 3b. Map Named Bus to H3 Reference Bus (`MapNamedReferenceBus` / `MiniMaxH3MapNamedReferenceBus`)
-- **Category**: `Bus/MiniMax`
+- **Category**: `ATP/Bus/Named`
 - **Description**: Bridges the flexible, unlimited Named Reference Bus to the standard MiniMax H3 Reference Bus (`H3_REF_BUS`).
 - **Inputs**:
   - `bus` (`H3_NAMED_REF_BUS` / `H3_REF_BUS`): Incoming named reference bus.
@@ -84,7 +108,7 @@ Connecting all of these individual sockets across large workflows or subgraphs i
 ### Video Settings Bus Pair (`H3_VIDEO_SETTINGS_BUS`)
 
 #### 3. Create MiniMax H3 Video Settings Bus (`MiniMaxH3CreateVideoSettingsBus`)
-- **Category**: `Bus/MiniMax`
+- **Category**: `ATP/Bus/Settings`
 - **Inputs**:
   - `bus` *(Optional `H3_VIDEO_SETTINGS_BUS`)*: Optional incoming settings bus to extend or override.
   - `model` *(Optional `MODEL`)*: Diffusion UNet/DiT model.
@@ -98,7 +122,7 @@ Connecting all of these individual sockets across large workflows or subgraphs i
   - `bus` (`H3_VIDEO_SETTINGS_BUS`): Bundled video settings bus.
 
 #### 4. Expand MiniMax H3 Video Settings Bus (`MiniMaxH3ExpandVideoSettingsBus`)
-- **Category**: `Bus/MiniMax`
+- **Category**: `ATP/Bus/Settings`
 - **Input**:
   - `bus` (`H3_VIDEO_SETTINGS_BUS`): Single incoming video settings bus.
 - **Outputs**:
@@ -113,6 +137,7 @@ Connecting all of these individual sockets across large workflows or subgraphs i
 ---
 
 ### Global Settings Extractor Nodes
+- **Category**: `ATP/Bus/Extractors`
 
 When you only need a single setting, steps count, or resolution pair somewhere in your workflow, use these compact extractor nodes instead of expanding the entire bus:
 
@@ -223,7 +248,7 @@ MiniMax H3 is an omnimodal model that generates video latents (`5D: [B, 24, T, H
 The following nodes solve this by natively saving, loading, and concatenating MiniMax H3's `NestedTensor` format without errors:
 
 ### 1. Save MiniMax H3 AV Latent (`MiniMaxH3SaveNestedLatent`)
-- **Category**: `Bus/MiniMax/Latent`
+- **Category**: `ATP/Latent`
 - **Search Aliases**: `Save MiniMax H3 AV Latent`, `Save Nested Tensor`, `Save Video Part`
 - **Inputs**:
   - `samples` (`LATENT`): The incoming MiniMax H3 joint AV latent (`NestedTensor`).
@@ -239,7 +264,7 @@ The following nodes solve this by natively saving, loading, and concatenating Mi
   - Displays real-time on-canvas summary: filename, folder, part number, frame count, duration, resolution, audio status, and file size in MB.
 
 ### 2. Load MiniMax H3 AV Latent (`MiniMaxH3LoadNestedLatent`)
-- **Category**: `Bus/MiniMax/Latent`
+- **Category**: `ATP/Latent`
 - **Search Aliases**: `Load MiniMax H3 AV Latent`, `Load Nested Tensor`, `Load Video Part`
 - **Inputs**:
   - `latent_file` (`Combo`): Dropdown listing all available `.latent` and `.safetensors` files from **both** `output/` and `input/` directories (no need to manually move files from output to input!).
@@ -255,7 +280,7 @@ The following nodes solve this by natively saving, loading, and concatenating Mi
   - `duration` (`FLOAT`): Duration in seconds at 24 fps.
 
 ### 3. Concat MiniMax H3 AV Latents (`MiniMaxH3ConcatAVLatent`)
-- **Category**: `Bus/MiniMax/Latent`
+- **Category**: `ATP/Latent`
 - **Search Aliases**: `Concat MiniMax H3 Latents`, `Stitch Video Parts`, `Join H3 Latents`
 - **Inputs**:
   - `latent_a` (`LATENT`): First MiniMax H3 AV latent (Part N).
@@ -274,7 +299,7 @@ The following nodes solve this by natively saving, loading, and concatenating Mi
 ### Text Loader Node (`LoadText`)
 
 #### Load Text (`LoadText` / `MiniMaxH3LoadText`)
-- **Category**: `text` (also accessible under `Bus/MiniMax`)
+- **Category**: `ATP/Text`
 - **Search Aliases**: `Load Text`, `Read Text`, `Text File`, `Load Prompt`, `Open File`, `Text Loader`, `Load Markdown`
 - **Inputs**:
   - `filename` (`STRING`): Path or filename of the text/markdown/prompt file to load.
@@ -292,6 +317,50 @@ The following nodes solve this by natively saving, loading, and concatenating Mi
   - **Robust Auto-Updates**: In addition to filesystem timestamps, computes a SHA256 content hash on small text/prompt files (< 5MB). Changes are immediately recognized even across network shares, mapped drives (e.g. `O:\`), NAS, or cloud-synced folders where filesystem timestamps might lag.
   - **Multi-Encoding Support**: Transparently reads UTF-8 (with or without BOM), CP1252/Windows-1252, Latin-1, and UTF-16.
   - **Path Cleaning**: Automatically strips leading/trailing quotes when copying paths from Windows File Explorer (`"C:\path\to\file.md"`).
+
+---
+
+### Modular Style Composer (`ModularStyleComposer` / `MiniMaxH3StyleComposer` / `StyleComposer`)
+
+A modular aesthetic prompt builder that combines multi-dimensional artistic attributes (medium/style, mood, lighting, camera framing, and detail) into rich, natural prose or structured tags.
+
+- **Category**: `ATP/Style`
+- **Search Aliases**: `Modular Style Composer`, `Style Composer`, `Style Generator`, `Prompt Styler`, `ModularStyleComposer`, `MiniMaxH3StyleComposer`
+- **Inputs**:
+  - `base_prompt` (`STRING`, optional, multiline): Base subject prompt to combine with the generated style.
+  - `preset` (`COMBO`): Curated aesthetic combinations (e.g., *Blade Runner Cyberpunk*, *Studio Ghibli Watercolor*, *Moody 35mm Street Noir*, *Dark Fantasy Gothic*, *Vintage Polaroid Snapshot*, *Baroque Oil Masterpiece*, *Wes Anderson Symmetrical*, etc.). Selecting a preset automatically populates the category dropdowns. Changing any category dropdown automatically switches this back to `"Custom"`.
+  - `style` (`COMBO`): Primary artistic medium (*Cinematic 35mm Film*, *Anime / Cel-Shaded*, *Baroque Oil Painting*, *Cyberpunk Concept Art*, *Vintage Polaroid 600*, *Dark Fantasy Gothic*, *Watercolor & Ink*, etc.).
+  - `mood` (`COMBO`): Atmospheric and emotional tone (*Ethereal & Dreamy*, *Gritty & Dystopian*, *Melancholic Noir*, *Peaceful & Serene*, *Ominous & Foreboding*, *Whimsical & Playful*, etc.).
+  - `lighting` (`COMBO`): Lighting scheme and luminance (*Golden Hour Warm Volumetric*, *Chiaroscuro Deep Shadow*, *Neon High-Contrast*, *Overcast Diffused Softbox*, *Bioluminescent Glow*, *Candlelit Warm Amber*, etc.).
+  - `camera` (`COMBO`): Framing, lens, and vantage point (*Intimate 85mm Portrait (f/1.4)*, *Wide-Angle Dramatic (24mm)*, *Macro Extreme Close-Up*, *Low-Angle Heroic*, *Dutch Angle Dynamic*, etc.).
+  - `detail` (`COMBO`): Tactile surface finish and micro-details (*Analogue Film Grain*, *Painterly Soft Textures*, *Atmospheric Rain & Haze*, *Weathered Aged Patina*, *Impasto Heavy Brushwork*, etc.).
+  - `format_style` (`COMBO`):
+    - `Natural Paragraph`: Composes natural flowing descriptive sentences ideal for modern DiT and multimodal models (MiniMax H3, Flux, SD3).
+    - `Comma Tags`: Composes comma-separated keywords ideal for classic models (SDXL, SD 1.5).
+    - `Prompt Suffix`: Formats as `, styled as [attributes]`.
+  - `format_string` (`STRING`, optional, multiline): Custom format template for Natural Paragraph mode. Supported placeholders: `{prompt}`, `{style}`, `{mood}`, `{lighting}`, `{camera}`, `{detail}`, and `{preset}`. Default: `"{prompt}. Rendered as {style}, evoking a {mood} atmosphere. Lit by {lighting}, {camera}, featuring {detail}."`
+  - `placement` (`COMBO`): `Append Style`, `Prepend Style`, or `Style Only`.
+  - `negative_prompt_input` (`STRING`, optional, multiline): Optional incoming negative prompt to combine with auto-generated style suppression tags.
+  - **`🎲 Randomize` Button**: Action button widget on the node that randomly picks options across all style dropdowns (`style`, `mood`, `lighting`, `camera`, and `detail`), instantly generating unique aesthetic combinations while keeping the preset dropdown in sync.
+  - **`🔄 Reload Options` Button**: Button widget on the node that triggers an instant reload of all JSON data files from disk without restarting ComfyUI.
+- **Outputs**:
+  - `prompt` (`STRING`): Complete combined prompt.
+  - `style_description` (`STRING`): Standalone style description clause.
+  - `negative_prompt` (`STRING`): Deduplicated combined negative prompt including recommended anti-style suppressions (e.g. suppressing `cgi, 3d render` when *Cinematic 35mm Film* is selected).
+- **JSON Data Architecture**:
+  - All dropdown choices and descriptive phrases are stored in individual JSON files located in `style_data/`:
+    - `presets.json`: Aesthetic preset definitions.
+    - `styles.json`: Primary medium & style definitions with prompt and negative attributes.
+    - `moods.json`: Atmospheric tones.
+    - `lighting.json`: Lighting setups.
+    - `cameras.json`: Lens and framing configurations.
+    - `details.json`: Micro-texture and surface finishes.
+  - **Style Packs Support**:
+    - Users can organize and drop modular packs into sub-folders within `style_data/` (e.g. `style_data/Cinematic Pack/` or `style_data/Anime Studio/`).
+    - Sub-folders can contain any of the standard JSON files (`styles.json`, `moods.json`, `lighting.json`, `cameras.json`, `details.json`, `presets.json`).
+    - Options defined in style packs are automatically appended to the default dropdowns and suffixed with the folder name: `Option Name (Folder Name)`, e.g., `Arri Alexa 35mm Prime (Cinematic Pack)`.
+    - Presets defined in packs automatically link to options in the same pack or default options.
+    - Click **`🔄 Reload Options`** to instantly discover and load newly added or modified style packs without restarting ComfyUI!
 
 ---
 

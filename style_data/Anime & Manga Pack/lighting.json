@@ -1,0 +1,43 @@
+{
+  "Shinkai Golden Magic Hour": {
+    "prompt": "breathtaking golden hour anime lighting, radiant crepuscular sunbeams piercing clouds, brilliant lens flares, glowing warm horizon glow",
+    "negative": "flat overcast, harsh direct flash, dull grey"
+  },
+  "Traditional Two-Tone Cel Shading": {
+    "prompt": "crisp traditional anime two-tone cel shading, sharp graphic shadow boundaries, clean unblended highlight planes, authentic 2D anime illumination",
+    "negative": "smooth gradient 3d render, complex photographic shading, muddy blended brushwork"
+  },
+  "Cyberpunk Neon Backlight & Puddle Glare": {
+    "prompt": "vivid cyan and electric magenta neon backlighting, stark silhouette rim lighting, glossy wet ground reflections, glowing signs",
+    "negative": "natural daylight, sunbeams, pastoral light"
+  },
+  "Soft Shojo Sparkle & Prism Glow": {
+    "prompt": "dreamy soft shojo lighting, diffused pastel luminance, prismatic rainbow light leaks, glowing starburst flares and soft halo effects",
+    "negative": "grim shadows, pitch black, harsh stark lighting"
+  },
+  "Ufotable Radiant Elemental Glow": {
+    "prompt": "dynamic glowing magical illumination, intense fiery elemental rim light, brilliant volumetric spark radiance, deep cinematic ambient contrast",
+    "negative": "flat lighting, unlit, dull matte"
+  },
+  "Dramatic Moonlit Silhouette": {
+    "prompt": "cold silvery moonlight backlighting, stark silhouette against an oversized glowing full moon, deep indigo night ambience",
+    "negative": "bright sunshine, warm daylight, flat studio light"
+  },
+  "High-Contrast Manga Screen Fill": {
+    "prompt": "dramatic high-contrast black ink shadow blocking, pure white negative space lighting, graphic manga chiaroscuro",
+    "negative": "soft color gradients, realistic shadows, photorealistic"
+  },
+  "Classroom Afternoon Window Sunbeams": {
+    "prompt": "nostalgic late-afternoon classroom sunlight streaming through window blinds, slanting warm dust-mote light rays, golden ambient warmth",
+    "negative": "pitch black, fluorescent office, neon night"
+  },
+  "Ethereal Spirit Forest Bioluminescence": {
+    "prompt": "mystical twilight forest lighting, glowing bioluminescent moss and spirit orbs, soft floating turquoise and emerald fairy lights",
+    "negative": "harsh artificial spotlight, desert sun"
+  },
+  "Explosive Muzzle Flash & Sparks": {
+    "prompt": "searing muzzle flash lighting, blinding ignition flares, stark flickering shadows, searing orange sparks illuminating the darkness",
+    "negative": "tranquil, static, evenly lit, soft pastel"
+  }
+}
+

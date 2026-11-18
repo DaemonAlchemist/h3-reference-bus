@@ -2,6 +2,10 @@ from comfy_api.latest import ComfyExtension
 from .nodes import (
     MiniMaxH3CreateReferenceBus,
     MiniMaxH3ExpandReferenceBus,
+    MiniMaxH3CreateImageReferenceBus,
+    CreateImageReferenceBus,
+    MiniMaxH3ExpandImageReferenceBus,
+    ExpandImageReferenceBus,
     MiniMaxH3CreateNamedReferenceBus,
     CreateNamedReferenceBus,
     MiniMaxH3ExpandNamedReferenceBus,
@@ -29,6 +33,9 @@ from .nodes import (
     LoadText,
     MiniMaxH3LoadText,
     H3LoadText,
+    ModularStyleComposer,
+    MiniMaxH3StyleComposer,
+    StyleComposer,
 )
 
 WEB_DIRECTORY = "web"
@@ -41,6 +48,10 @@ class H3ReferenceBusExtension(ComfyExtension):
         return [
             MiniMaxH3CreateReferenceBus,
             MiniMaxH3ExpandReferenceBus,
+            MiniMaxH3CreateImageReferenceBus,
+            CreateImageReferenceBus,
+            MiniMaxH3ExpandImageReferenceBus,
+            ExpandImageReferenceBus,
             MiniMaxH3CreateNamedReferenceBus,
             CreateNamedReferenceBus,
             MiniMaxH3ExpandNamedReferenceBus,
@@ -64,6 +75,8 @@ class H3ReferenceBusExtension(ComfyExtension):
             MiniMaxH3ConcatAVLatent,
             LoadText,
             MiniMaxH3LoadText,
+            ModularStyleComposer,
+            MiniMaxH3StyleComposer,
         ]
 
 
@@ -75,6 +88,10 @@ __all__ = [
     "comfy_entrypoint",
     "MiniMaxH3CreateReferenceBus",
     "MiniMaxH3ExpandReferenceBus",
+    "MiniMaxH3CreateImageReferenceBus",
+    "CreateImageReferenceBus",
+    "MiniMaxH3ExpandImageReferenceBus",
+    "ExpandImageReferenceBus",
     "MiniMaxH3CreateNamedReferenceBus",
     "CreateNamedReferenceBus",
     "MiniMaxH3ExpandNamedReferenceBus",
@@ -102,6 +119,9 @@ __all__ = [
     "LoadText",
     "MiniMaxH3LoadText",
     "H3LoadText",
+    "ModularStyleComposer",
+    "MiniMaxH3StyleComposer",
+    "StyleComposer",
     "WEB_DIRECTORY",
 ]
 

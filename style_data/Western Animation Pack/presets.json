@@ -1,0 +1,150 @@
+{
+  "Golden Age Disney Fairy Tale": {
+    "style": "Golden Age Disney Cel Animation",
+    "mood": "Nostalgic Storybook Wonder",
+    "lighting": "Lush Multiplane Dimensional Light",
+    "camera": "Sweeping Grand Multiplane Pan",
+    "detail": "Hand-Painted Gouache & Watercolor Background Art"
+  },
+  "1930s Fleischer Rubber Hose Cartoon": {
+    "style": "1930s Fleischer Rubber Hose Cartoon",
+    "mood": "Slapstick Comic Chaos",
+    "lighting": "Bright Technicolor Saturated Daylight",
+    "camera": "Zany Wide-Angle Slapstick Distortion",
+    "detail": "Vintage 1930s Film Scratches & Sepia Grain"
+  },
+  "Batman Dark Deco Comic Noir": {
+    "style": "Bruce Timm Comic Noir (Batman TAS)",
+    "mood": "Dark Art-Deco Noir",
+    "lighting": "Dark Deco High-Contrast Black Paper",
+    "camera": "Dark Deco Atmospheric Silhouette Medium",
+    "detail": "Bold Graphic Ink Outlines & Flat Color Planes"
+  },
+  "Arcane Piltover Painterly 2.5D": {
+    "style": "Arcane / Fortiche Painterly 2.5D",
+    "mood": "Dystopian Kinetic Rebellion",
+    "lighting": "Painterly Brushstroke Specular Glare",
+    "camera": "Dynamic Graphic Low-Angle Hero Framing",
+    "detail": "Expressive Paintbrush Strokes & Digital Matte Texture"
+  },
+  "Spider-Verse Kinetic Comic Dimension": {
+    "style": "Spider-Verse Comic Book 3D",
+    "mood": "Dystopian Kinetic Rebellion",
+    "lighting": "CMYK Print Halftone & Neon Bleed",
+    "camera": "Extreme Comic Book Kinetic Dutch Angle",
+    "detail": "Comic Halftone Dots & CMYK Color Separation"
+  },
+  "Laika Gothic Stop-Motion": {
+    "style": "Laika Gothic Stop-Motion",
+    "mood": "Tactile Gothic Whimsy",
+    "lighting": "Gothic Candlelit Cobblestone Twilight",
+    "camera": "Tactile Miniature Puppet Macro Close-Up",
+    "detail": "Tactile Plasticine Thumbprints & Armature"
+  },
+  "Looney Tunes Slapstick Mayhem": {
+    "style": "Looney Tunes Slapstick Animation",
+    "mood": "Slapstick Comic Chaos",
+    "lighting": "Bright Technicolor Saturated Daylight",
+    "camera": "Zany Wide-Angle Slapstick Distortion",
+    "detail": "Dynamic Action Dust Puffs & Impact Stars"
+  },
+  "Genndy Tartakovsky Mythic Action": {
+    "style": "Genndy Tartakovsky Bold Graphic Action",
+    "mood": "High-Octane Graphic Intensity",
+    "lighting": "Theatrical Moody Rim & Fog Backlight",
+    "camera": "Cinematic Widescreen Letterbox Staging",
+    "detail": "Bold Graphic Ink Outlines & Flat Color Planes"
+  },
+  "Over the Garden Wall Autumn Tale": {
+    "style": "Over the Garden Wall Storybook Folk",
+    "mood": "Eerie Autumnal Folk Horror",
+    "lighting": "Golden Autumn Hearth & Lantern Glow",
+    "camera": "Intimate Storybook Eye-Level Vignette",
+    "detail": "Vintage Storybook Paper & Woodcut Texture"
+  },
+  "Don Bluth 80s Atmospheric Epic": {
+    "style": "Don Bluth Dark Epic Animation",
+    "mood": "Grand Disney Renaissance Majesty",
+    "lighting": "Theatrical Moody Rim & Fog Backlight",
+    "camera": "Sweeping Grand Multiplane Pan",
+    "detail": "Backlit Glowing Animation Cel Effects"
+  },
+  "Pixar Heartfelt 3D Adventure": {
+    "style": "Pixar Emotional Feature 3D",
+    "mood": "Heartfelt Pixar Melancholy & Joy",
+    "lighting": "Lush Multiplane Dimensional Light",
+    "camera": "Epic Sweeping Aerial Flight Camera",
+    "detail": "Lush Subsurface Scattering & Stylized Fur"
+  },
+  "Puss in Boots Stylized Fairy Tale": {
+    "style": "Puss in Boots: The Last Wish Stylized 3D",
+    "mood": "High-Octane Graphic Intensity",
+    "lighting": "Painterly Brushstroke Specular Glare",
+    "camera": "Dynamic Graphic Low-Angle Hero Framing",
+    "detail": "Expressive Paintbrush Strokes & Digital Matte Texture"
+  },
+  "Aardman Claymation Comedy": {
+    "style": "Aardman Tactile Plasticine Claymation",
+    "mood": "Slapstick Comic Chaos",
+    "lighting": "Tactile Miniature Physical Studio Lighting",
+    "camera": "Tactile Miniature Puppet Macro Close-Up",
+    "detail": "Tactile Plasticine Thumbprints & Armature"
+  },
+  "Disney Renaissance 90s Musical Epic": {
+    "style": "Disney Renaissance 90s Grandeur",
+    "mood": "Grand Disney Renaissance Majesty",
+    "lighting": "Lush Multiplane Dimensional Light",
+    "camera": "Sweeping Grand Multiplane Pan",
+    "detail": "Hand-Painted Gouache & Watercolor Background Art"
+  },
+  "Adventure Time Whimsical Pastel": {
+    "style": "CalArts / Modern Whimsical 2D",
+    "mood": "Nostalgic Storybook Wonder",
+    "lighting": "Whimsical Pastel Ambient Glow",
+    "camera": "Classic Animation Symmetrical Staging",
+    "detail": "Bold Graphic Ink Outlines & Flat Color Planes"
+  },
+  "Heavy Metal 80s Sci-Fi Fantasy": {
+    "style": "Heavy Metal 80s Sci-Fi Fantasy",
+    "mood": "High-Octane Graphic Intensity",
+    "lighting": "Theatrical Moody Rim & Fog Backlight",
+    "camera": "Dynamic Graphic Low-Angle Hero Framing",
+    "detail": "Backlit Glowing Animation Cel Effects"
+  },
+  "UPA 1950s Mid-Century Modern": {
+    "style": "UPA Mid-Century Modern Graphic",
+    "mood": "Saturday Morning Heroic Optimism",
+    "lighting": "Bright Technicolor Saturated Daylight",
+    "camera": "Classic Animation Symmetrical Staging",
+    "detail": "Bold Graphic Ink Outlines & Flat Color Planes"
+  },
+  "Gravity Falls Mystery Adventure": {
+    "style": "Gravity Falls Mystery Adventure 2D",
+    "mood": "Nostalgic Storybook Wonder",
+    "lighting": "Golden Autumn Hearth & Lantern Glow",
+    "camera": "Intimate Storybook Eye-Level Vignette",
+    "detail": "Hand-Painted Gouache & Watercolor Background Art"
+  },
+  "Ralph Bakshi Gritty Underground 70s": {
+    "style": "Ralph Bakshi Gritty Adult Animation",
+    "mood": "Dystopian Kinetic Rebellion",
+    "lighting": "Dark Deco High-Contrast Black Paper",
+    "camera": "Zany Wide-Angle Slapstick Distortion",
+    "detail": "Vintage 1930s Film Scratches & Sepia Grain"
+  },
+  "DreamWorks Aerial Dragon Flight": {
+    "style": "DreamWorks Cinematic Feature 3D",
+    "mood": "Saturday Morning Heroic Optimism",
+    "lighting": "Lush Multiplane Dimensional Light",
+    "camera": "Epic Sweeping Aerial Flight Camera",
+    "detail": "Lush Subsurface Scattering & Stylized Fur"
+  },
+  "Hanna-Barbera 1960s Saturday Morning": {
+    "style": "Hanna-Barbera 1960s Saturday Morning",
+    "mood": "Saturday Morning Heroic Optimism",
+    "lighting": "Bright Technicolor Saturated Daylight",
+    "camera": "Classic Animation Symmetrical Staging",
+    "detail": "Hand-Painted Gouache & Watercolor Background Art"
+  }
+}
+

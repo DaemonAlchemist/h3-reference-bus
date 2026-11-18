@@ -1,0 +1,46 @@
+{
+  "None": {
+    "prompt": "",
+    "negative": ""
+  },
+  "Intimate 85mm Portrait (f/1.4)": {
+    "prompt": "shot on an 85mm f/1.4 portrait prime lens, shallow depth of field, creamy smooth background bokeh, flattering perspective compression",
+    "negative": "deep focus, distorted wide angle"
+  },
+  "Wide-Angle Dramatic (24mm)": {
+    "prompt": "captured on a 24mm wide-angle cinema lens, expansive dynamic field of view, dramatic perspective elongation, heroic scale",
+    "negative": "telephoto, flat compression"
+  },
+  "Intimate 50mm Lens (f/1.8)": {
+    "prompt": "shot on a 50mm natural eye-level lens, balanced organic perspective, subtle background separation, documentary realism",
+    "negative": "extreme fisheye, heavy distortion"
+  },
+  "Macro Extreme Close-Up": {
+    "prompt": "macro probe lens close-up with razor-thin focal plane, astonishing textural fidelity, intimate microscopic perspective",
+    "negative": "wide landscape, distant view"
+  },
+  "Low-Angle Heroic": {
+    "prompt": "framed from a dramatic low-angle upward perspective, imposing heroic presence, towering vertical lines, commanding vantage",
+    "negative": "high-angle, birds-eye view"
+  },
+  "High-Angle Overhead": {
+    "prompt": "framed from an overhead high-angle perspective, god-view vantage point, graphic planar composition, striking spatial overview",
+    "negative": "low-angle worm-eye view"
+  },
+  "Dutch Angle Dynamic": {
+    "prompt": "composed at a stylized Dutch tilted angle, kinetic diagonal tension, psychological disorientation, dynamic off-axis framing",
+    "negative": "level horizon, static symmetry"
+  },
+  "Panoramic Scenic View": {
+    "prompt": "captured in an expansive panoramic scenic view, sweeping ultra-wide 2.39:1 aspect ratio, majestic horizon depth",
+    "negative": "tight close-up, portrait crop"
+  },
+  "Classic Symmetrical Medium Shot": {
+    "prompt": "composed as a meticulously symmetrical medium shot, Wes Anderson inspired center-weighted framing, balanced formal harmony",
+    "negative": "tilted, chaotic framing, off-center"
+  },
+  "Handheld Kinetic Framing": {
+    "prompt": "captured with subtle handheld cinema camera framing, organic breathing motion, intimate documentary presence, raw unscripted kinetic feel",
+    "negative": "locked-off rigid tripod, sterile"
+  }
+}

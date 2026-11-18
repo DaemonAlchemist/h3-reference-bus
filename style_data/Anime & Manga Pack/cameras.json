@@ -1,0 +1,43 @@
+{
+  "Kinetic Dynamic Anime Dutch Angle": {
+    "prompt": "composed at a dramatic tilted Dutch angle with dynamic perspective distortion, foreshortened limbs, fast motion perspective",
+    "negative": "static horizontal symmetry, boring eye-level"
+  },
+  "Low-Angle Heroic Anime Stance": {
+    "prompt": "framed from a commanding low-angle upward anime view, towering heroic character silhouette framed against a dynamic sky",
+    "negative": "birds-eye overhead, looking down"
+  },
+  "Extreme Foreshortened Dynamic Action": {
+    "prompt": "captured with extreme dynamic anime foreshortening, weapon or hand thrust boldly toward the camera lens, dramatic wide-angle perspective distortion",
+    "negative": "flat compressed telephoto, timid posed framing"
+  },
+  "Ghibli Sweeping Panoramic Establishing View": {
+    "prompt": "captured in an expansive panoramic anime establishing shot, miniature character set within a breathtaking vast fantasy vista, painterly atmospheric depth",
+    "negative": "tight claustrophobic crop, macro view"
+  },
+  "Shojo Intimate Emotional Close-Up": {
+    "prompt": "shot as an intimate tight emotional anime portrait framing, focusing closely on glistening expressive eyes and parted lips, shallow background focus",
+    "negative": "distant long shot, wide angle distortion"
+  },
+  "Ultra-Wide Fisheye Anime Lens": {
+    "prompt": "captured through an ultra-wide circular fisheye anime lens, curved dramatic horizon, exaggerated radial barrel distortion, heightened sense of velocity",
+    "negative": "flat rectilinear lens, narrow telephoto"
+  },
+  "Over-the-Shoulder Anime Tension Framing": {
+    "prompt": "composed in a cinematic over-the-shoulder anime framing, foreground silhouette framing the focused face of the opposing character, intense dialogue tension",
+    "negative": "isolated flat portrait, centered passport photo"
+  },
+  "Manga Dynamic Panel Multi-Angle": {
+    "prompt": "framed with dramatic manga comic composition, dynamic diagonal focal cut, high-impact compositional asymmetry, speed-line perspective",
+    "negative": "standard centered photo, static grid"
+  },
+  "Overhead High-Angle Dramatic Plunge": {
+    "prompt": "framed from a vertiginous top-down birds-eye anime perspective, looking straight down from skyscraper heights, dramatic vertical depth",
+    "negative": "eye-level, upward worm-eye view"
+  },
+  "Classic Symmetrical Anime Stare": {
+    "prompt": "composed in a striking dead-center symmetrical anime framing, piercing direct eye contact with the viewer, powerful formal alignment",
+    "negative": "off-center tilted, casual snap"
+  }
+}
+

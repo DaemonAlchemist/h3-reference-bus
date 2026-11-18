@@ -7,6 +7,12 @@ function isCreateNamedBus(node) {
     return c === "MiniMaxH3CreateNamedReferenceBus" || c === "CreateNamedReferenceBus";
 }
 
+function isCreateImageBus(node) {
+    if (!node) return false;
+    const c = node.comfyClass || node.constructor?.comfyClass || node.type;
+    return c === "MiniMaxH3CreateImageReferenceBus" || c === "CreateImageReferenceBus";
+}
+
 function isExpandNamedBus(node) {
     if (!node) return false;
     const c = node.comfyClass || node.constructor?.comfyClass || node.type;
@@ -193,6 +199,7 @@ function updateExpandNodeOutputs(expandNode) {
     const createNode = getUpstreamCreateBusNode(expandNode);
     const isCreateBus = createNode && (
         isCreateNamedBus(createNode) ||
+        isCreateImageBus(createNode) ||
         createNode.comfyClass === "MiniMaxH3CreateReferenceBus" ||
         createNode.type === "MiniMaxH3CreateReferenceBus"
     );
@@ -1021,6 +1028,78 @@ app.registerExtension({
             };
 
             setTimeout(updateBusStatus, 100);
+        } else if (node.comfyClass === "MiniMaxH3CreateImageReferenceBus" || node.comfyClass === "CreateImageReferenceBus") {
+            const statusWidget = node.addWidget(
+                "text",
+                "bus_status",
+                "Incoming Bus: None (Root)",
+                () => {},
+                { serialize: false }
+            );
+
+            if (statusWidget.inputEl) {
+                statusWidget.inputEl.readOnly = true;
+                statusWidget.inputEl.style.opacity = "0.75";
+                statusWidget.inputEl.style.fontSize = "11px";
+                statusWidget.inputEl.style.fontFamily = "monospace";
+            }
+
+            function updateImageBusStatus() {
+                if (!app.graph) return;
+                const busInput = node.inputs?.find(i => i.name === "bus");
+                if (!busInput || busInput.link == null) {
+                    statusWidget.value = "Incoming Bus: None (Root)";
+                    node.setDirtyCanvas(true, true);
+                    return;
+                }
+
+                const link = app.graph.links[busInput.link];
+                if (!link) {
+                    statusWidget.value = "Incoming Bus: Connected";
+                    node.setDirtyCanvas(true, true);
+                    return;
+                }
+
+                let imgCount = 0;
+
+                function traverse(currentNode, visited = new Set()) {
+                    if (!currentNode || visited.has(currentNode.id)) return;
+                    visited.add(currentNode.id);
+
+                    if (currentNode.inputs) {
+                        for (const inp of currentNode.inputs) {
+                            if (inp.link != null) {
+                                if (inp.name.startsWith("ref_image_") || inp.name === "ref_images") {
+                                    imgCount++;
+                                }
+                            }
+                        }
+                    }
+
+                    const upBus = currentNode.inputs?.find(i => i.name === "bus");
+                    if (upBus && upBus.link != null) {
+                        const upLink = app.graph.links[upBus.link];
+                        if (upLink) {
+                            traverse(app.graph.getNodeById(upLink.origin_id), visited);
+                        }
+                    }
+                }
+
+                traverse(app.graph.getNodeById(link.origin_id));
+                const imgTag = imgCount > 0 ? ` (<Picture 1..${imgCount}>)` : "";
+                statusWidget.value = `Incoming Bus: ${imgCount} img${imgTag}`;
+                node.setDirtyCanvas(true, true);
+            }
+
+            const origOnConnectionsChange = node.onConnectionsChange;
+            node.onConnectionsChange = function(type, index, isConnected, link_info) {
+                if (origOnConnectionsChange) {
+                    origOnConnectionsChange.apply(this, arguments);
+                }
+                setTimeout(updateImageBusStatus, 60);
+            };
+
+            setTimeout(updateImageBusStatus, 100);
         } else if (node.comfyClass === "MiniMaxH3CreateVideoSettingsBus") {
             const statusWidget = node.addWidget(
                 "text",

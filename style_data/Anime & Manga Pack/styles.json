@@ -1,0 +1,91 @@
+{
+  "Studio Ghibli Lush Fantasy": {
+    "prompt": "Studio Ghibli animation aesthetic, hand-painted gouache background, lush organic nature, warm nostalgic watercolor hues, Miyazaki inspired character design, clean expressive linework",
+    "negative": "photorealistic, 3d cgi, harsh digital lines, noisy textures, live action"
+  },
+  "Makoto Shinkai Radiant Anime": {
+    "prompt": "Makoto Shinkai anime aesthetic, CoMix Wave Films style, hyper-detailed panoramic sky, radiant volumetric cloud formations, pristine vibrant color palette, sparkling atmospheric light reflections",
+    "negative": "grungy, dark desaturated, grainy low-res, crude sketch"
+  },
+  "90s Retro Cel OVA": {
+    "prompt": "classic 1990s anime OVA aesthetic, authentic hand-painted animation cels, vintage 16mm anime film grain, bold ink contour lines, rich saturated gouache colors, Neon Genesis Evangelion and Cowboy Bebop inspired",
+    "negative": "modern digital vector, 3d computer graphics, flat digital gradients, washed out"
+  },
+  "80s Cyberpunk Anime (Akira / Bubblegum)": {
+    "prompt": "1980s retro cyberpunk anime aesthetic, Akira and Bubblegum Crisis style, hand-drawn mechanical details, dramatic backlit neon glows, gritty painted cel shadows, dark moody urban atmosphere",
+    "negative": "clean modern 3d, pastel cute, bright daylight"
+  },
+  "Ufotable Dynamic Digital VFX": {
+    "prompt": "Ufotable studio anime aesthetic, Demon Slayer and Fate style, dynamic digital compositing, hyper-polished character linework, radiant glowing particle VFX, deep 3D cinematic depth of field",
+    "negative": "flat 2d sketch, muted colors, low budget animation, blurry"
+  },
+  "Kyoto Animation Delicate Aesthetic": {
+    "prompt": "Kyoto Animation style, Violet Evergarden aesthetic, exquisite delicate character linework, luminous emotive eyes with intricate iris reflections, soft ambient lighting, poetic visual storytelling",
+    "negative": "harsh outlines, crude anatomy, rough sketch, noisy"
+  },
+  "Trigger / Gainax Hyper-Dynamic": {
+    "prompt": "Studio Trigger and Gainax anime aesthetic, Kill la Kill and Gurren Lagann style, extreme expressive dynamic poses, thick bold stylized ink lines, vibrant saturated pop colors, high-energy impact composition",
+    "negative": "subdued realistic, gentle watercolor, rigid static poses, pastel"
+  },
+  "MAPPA Gritty Dark Shonen": {
+    "prompt": "MAPPA studio aesthetic, Jujutsu Kaisen and Chainsaw Man inspired, gritty cinematic tone, expressive rough line hatching, intense kinetic action, moody desaturated palette with stark color contrasts",
+    "negative": "cutesy cartoon, colorful pastel, glossy 3d, flat children's book"
+  },
+  "Shaft Surreal Avant-Garde": {
+    "prompt": "Studio Shaft anime aesthetic, Monogatari and Madoka Magica style, avant-garde surreal visual design, stark geometric patterns, bold minimalist color blocking, eccentric cinematic staging",
+    "negative": "conventional generic anime, realistic photo, muddy gradients"
+  },
+  "Classic Black & White Manga Page": {
+    "prompt": "authentic printed black and white manga page, crisp G-pen ink linework, fine crosshatch shading, authentic mechanical screentone dot gradations, stark monochrome ink contrast, tactile printed paper texture",
+    "negative": "color, watercolor washes, 3d render, blurry grayscale, digital airbrush"
+  },
+  "Seinen Dark Fantasy Manga (Berserk Style)": {
+    "prompt": "masterwork dark fantasy seinen manga aesthetic, Kentaro Miura Berserk inspired, extraordinarily dense ink crosshatching, heavy black sumi ink shadows, visceral textural detail, epic gothic scale",
+    "negative": "clean cute shojo, colorful, flat digital fill, simple cartoon"
+  },
+  "Shonen Action Manga Ink": {
+    "prompt": "high-energy shonen action manga style, explosive ink speedlines, bold brush strokes, dynamic impact bursts, screentone dot shading, intense kinetic linework",
+    "negative": "full color, gentle romance, slow static, photorealistic"
+  },
+  "Shojo Romantic Manga": {
+    "prompt": "classic shojo manga aesthetic, delicate gossamer fine-pen lines, decorative screentone patterns, floating rose petals and sparkle effects, huge emotive expressive eyes, elegant airy composition",
+    "negative": "heavy dark ink, gore, gritty violence, harsh mecha"
+  },
+  "Junji Ito Claustrophobic Horror Manga": {
+    "prompt": "Junji Ito macabre horror manga aesthetic, intricate obsessive fine-line ink work, claustrophobic spiral patterns, uncanny anatomical precision, stark black and white ink dread, terrifying atmosphere",
+    "negative": "cheerful, cute, full color, comforting, soft cartoon"
+  },
+  "Digital Color Webtoon / Manhwa": {
+    "prompt": "modern full-color Korean manhwa and webtoon aesthetic, Solo Leveling style, sleek digital linework, luminous magical particle aura, rich vibrant digital shading, glossy high-contrast lighting",
+    "negative": "black and white print, vintage paper grain, rough pencil sketch, muted low-res"
+  },
+  "Chibi / Super-Deformed (SD)": {
+    "prompt": "adorable chibi super-deformed anime style, cute oversized head and miniature body proportions, huge sparkling emotive eyes, simplified charming features, playful pastel palette",
+    "negative": "realistic proportions, scary, grim, detailed gore, anatomically correct"
+  },
+  "80s City Pop Pastel Anime": {
+    "prompt": "1980s Japanese City Pop anime aesthetic, Hiroshi Nagai inspired, sun-drenched pastel gradients, tropical retro summer vibes, pristine turquoise pools, nostalgic seaside breeze, clean flat graphical geometry",
+    "negative": "dark dystopian, gritty cyberpunk, monochrome, high fantasy"
+  },
+  "Mecha / Real Robot Detailed": {
+    "prompt": "detailed real robot mecha anime aesthetic, Gundam and Macross style, intricate mechanical panel lines, weathered armor plating, warning stencil decals, hydraulic articulation, hard-surface sci-fi precision",
+    "negative": "soft organic, fantasy magic, chibi cute, messy sketch"
+  },
+  "Gothic Romance Anime (Vampire Hunter D)": {
+    "prompt": "dark gothic anime aesthetic, Vampire Hunter D Bloodlust and Castlevania style, ornate Baroque architecture, flowing silken cloaks, melancholic shadows, rich crimson and midnight indigo accents",
+    "negative": "bright cheerful cartoon, modern pop, everyday mundane"
+  },
+  "Early 2000s Digital Anime": {
+    "prompt": "early 2000s digital broadcast anime aesthetic, Bleach and Death Note era, sharp digital linework, clean two-tone cel shading, cool desaturated urban tones, stylish contemporary character design",
+    "negative": "vintage 70s film grain, 3d cgi, hyper-detailed painterly oil"
+  },
+  "Pixel Art Retro 16-Bit Anime": {
+    "prompt": "nostalgic 16-bit PC-98 Japanese retro anime adventure game pixel art, meticulous hand-placed pixels, limited vibrant CRT color palette, dithering shading, vintage visual novel charm",
+    "negative": "smooth vector, modern 3d, high resolution photograph, blurry"
+  },
+  "Modern Cinematographic Anime": {
+    "prompt": "cutting-edge indie art anime aesthetic, experimental color grading, mixed media textures, raw expressive keyframes, cinematic aspect ratio, subversive auteur animation style",
+    "negative": "generic cookie-cutter anime, flat colors, static"
+  }
+}
+

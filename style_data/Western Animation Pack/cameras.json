@@ -1,0 +1,43 @@
+{
+  "Sweeping Grand Multiplane Pan": {
+    "prompt": "captured with a sweeping multiplane camera pan, expansive dimensional background layering, grand theatrical staging",
+    "negative": "cramped close-up, flat single-plane background"
+  },
+  "Dynamic Graphic Low-Angle Hero Framing": {
+    "prompt": "framed in a sharp angular low-angle heroic perspective, graphic stylized silhouette towering against the sky",
+    "negative": "overhead high-angle, looking down"
+  },
+  "Cinematic Widescreen Letterbox Staging": {
+    "prompt": "composed in dramatic widescreen 2.39:1 letterbox staging, Genndy Tartakovsky inspired cinematic stillness and dynamic action tension",
+    "negative": "square 1:1, vertical video, casual snapshot"
+  },
+  "Extreme Comic Book Kinetic Dutch Angle": {
+    "prompt": "captured at an extreme kinetic Dutch angle, dynamic diagonal perspective, Spider-Verse style comic panel tension",
+    "negative": "flat level horizon, static symmetry"
+  },
+  "Intimate Storybook Eye-Level Vignette": {
+    "prompt": "framed in an intimate eye-level storybook vignette, soft rounded border framing, charming centered folk composition",
+    "negative": "extreme wide angle, bird-eye view"
+  },
+  "Tactile Miniature Puppet Macro Close-Up": {
+    "prompt": "shot with a tactile macro probe lens, shallow depth of field showcasing miniature puppet fabric textures and handcrafted armature details",
+    "negative": "distant wide landscape, deep infinite focus"
+  },
+  "Zany Wide-Angle Slapstick Distortion": {
+    "prompt": "captured with an exaggerated wide-angle cartoon lens, dynamic rubbery perspective distortion, energetic foreground squash",
+    "negative": "telephoto compression, rigid static portrait"
+  },
+  "Dark Deco Atmospheric Silhouette Medium": {
+    "prompt": "composed as a dramatic art deco medium shot, stark silhouette forms, heavy architectural shadow frames",
+    "negative": "bright colorful wide shot, centered passport photo"
+  },
+  "Epic Sweeping Aerial Flight Camera": {
+    "prompt": "framed in an epic sweeping aerial flight perspective, dynamic roller-coaster tracking through vast fantasy terrain",
+    "negative": "indoor room, low ceiling, static tripod"
+  },
+  "Classic Animation Symmetrical Staging": {
+    "prompt": "framed in balanced classical animation theatrical staging, proscenium arch symmetry, clear expressive character staging",
+    "negative": "tilted chaotic off-balance framing"
+  }
+}
+

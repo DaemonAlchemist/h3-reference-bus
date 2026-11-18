@@ -1,0 +1,43 @@
+{
+  "Lush Multiplane Dimensional Light": {
+    "prompt": "layered multiplane camera lighting, soft diffused atmospheric fog, radiant fairy-tale sunbeams piercing lush foliage, warm gouache ambient bounce",
+    "negative": "flat unlit, harsh direct flash, sterile digital light"
+  },
+  "Dark Deco High-Contrast Black Paper": {
+    "prompt": "dramatic Dark Deco chiaroscuro drawn on black paper, razor-sharp geometric searchlight cones, heavy velvety silhouettes, moody Gotham streetlight reflections",
+    "negative": "evenly lit, bright sunny, pastel daylight"
+  },
+  "Golden Autumn Hearth & Lantern Glow": {
+    "prompt": "warm glowing kerosene lantern light, flickering cozy fireplace amber luminescence, gentle twilight woods mist, nostalgic golden hour illumination",
+    "negative": "cold fluorescent, harsh direct sun, neon blue"
+  },
+  "Theatrical Moody Rim & Fog Backlight": {
+    "prompt": "intense theatrical backlighting, crisp glowing character rim light, dense volumetric swirling fog, dramatic Don Bluth style optical stage lighting",
+    "negative": "flat front lighting, midday sun, washed out"
+  },
+  "Painterly Brushstroke Specular Glare": {
+    "prompt": "Fortiche Arcane style painterly lighting, textured digital brushstroke highlights, vibrant color-cast ambient fills, dramatic edge separation and glowing neon accents",
+    "negative": "flat 2d shading, raw unrendered 3d, realistic photograph"
+  },
+  "CMYK Print Halftone & Neon Bleed": {
+    "prompt": "Spider-Verse style vibrant urban neon lighting, saturated magenta and cyan street glow, halftone Ben-Day screen dots, chromatic edge fringe and graffiti glow",
+    "negative": "natural sunlight, muted beige, antique sepia"
+  },
+  "Tactile Miniature Physical Studio Lighting": {
+    "prompt": "authentic stop-motion physical studio lighting, miniature tungsten key spotlights, colored theatrical gel rim fills, soft bounce cards casting tangible physical shadows",
+    "negative": "digital flat render, artificial computer glow, direct camera flash"
+  },
+  "Bright Technicolor Saturated Daylight": {
+    "prompt": "brilliant 1950s Technicolor daylight, saturated primary hues, crisp playful cast shadows, sparkling clean storybook sunlight",
+    "negative": "dark gloomy, muddy colors, desaturated grey"
+  },
+  "Whimsical Pastel Ambient Glow": {
+    "prompt": "soft diffused candy pastel lighting, gentle shadowless ambient warmth, glowing lavender and peach sky gradients, sweet dreamlike illumination",
+    "negative": "harsh black shadows, gritty dark, high-contrast spotlight"
+  },
+  "Gothic Candlelit Cobblestone Twilight": {
+    "prompt": "flickering tallow candlelight, cold silver cobblestone moonlight, moody deep violet twilight shadows, eerie Tim Burton style ambient glow",
+    "negative": "bright cheerful daylight, fluorescent office, midday sun"
+  }
+}
+

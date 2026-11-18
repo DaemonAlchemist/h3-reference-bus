@@ -1,0 +1,50 @@
+{
+  "None": {
+    "prompt": "",
+    "negative": ""
+  },
+  "Golden Hour Warm Volumetric": {
+    "prompt": "warm golden hour sunlight, low sun angle, long gentle shadows, luminous volumetric dust rays",
+    "negative": "flat harsh light, cold fluorescent, overcast"
+  },
+  "Chiaroscuro Deep Shadow": {
+    "prompt": "dramatic chiaroscuro lighting, intense Caravaggio contrast between radiant light and deep velvety shadows",
+    "negative": "flat lighting, evenly lit, washed out"
+  },
+  "Neon High-Contrast": {
+    "prompt": "vivid neon illumination, high-contrast cyan and magenta rim light, reflective wet pavement highlights, glowing tubes",
+    "negative": "natural sunlight, dull, muted beige"
+  },
+  "Overcast Diffused Softbox": {
+    "prompt": "soft diffused overcast daylight, shadowless ambient wrapping light, gentle neutral tones, cinematic cloudy exterior",
+    "negative": "harsh direct sun, hard specular highlights"
+  },
+  "Bioluminescent Glow": {
+    "prompt": "radiant bioluminescent lighting, glowing azure and emerald accents, dark surrounding ambient, mystical internal luminescence",
+    "negative": "bright daylight, artificial fluorescent"
+  },
+  "Candlelit Warm Amber": {
+    "prompt": "flickering candlelit illumination, intimate warm amber glow, soft dancing shadows, cozy low-key luminescence",
+    "negative": "cold daylight, electric fluorescent"
+  },
+  "Direct Flash Harsh Shadows": {
+    "prompt": "raw direct camera flash, 90s party snapshot aesthetic, stark hard-edged cast shadow, vivid foreground pop",
+    "negative": "soft diffused light, cinematic volumetric rays"
+  },
+  "Cinematic Rim Lighting": {
+    "prompt": "crisp cinematic rim lighting, silhouette-defining edge separation, moody low-fill background, dramatic Hollywood backlighting",
+    "negative": "flat front flash, washed out"
+  },
+  "Studio Three-Point Lighting": {
+    "prompt": "professional studio three-point lighting, balanced key light, soft fill, subtle hair kicker rim, pristine commercial exposure",
+    "negative": "muddy shadows, blown highlights, amateur lighting"
+  },
+  "Dappled Sunlight Through Leaves": {
+    "prompt": "dappled sunlight filtering through lush tree canopy, playful organic shadow patterns, vibrant natural light patches",
+    "negative": "indoor studio light, neon, flash"
+  },
+  "Moody Moonlight & Fog": {
+    "prompt": "cool pale moonlight piercing through heavy fog, silvery specular glints, atmospheric night haze, deep navy blue ambient",
+    "negative": "bright warm sun, daytime"
+  }
+}

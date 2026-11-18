@@ -1,0 +1,50 @@
+{
+  "None": {
+    "prompt": "",
+    "negative": ""
+  },
+  "Ethereal & Dreamy": {
+    "prompt": "ethereal and dreamlike, floating serenity, soft magical haze, luminous reverie",
+    "negative": "harsh, gritty, violent, bleak"
+  },
+  "Gritty & Dystopian": {
+    "prompt": "gritty and dystopian, oppressive industrial dread, weathered decay, bleak urban grit",
+    "negative": "peaceful, cheerful, pastel, clean"
+  },
+  "Melancholic Noir": {
+    "prompt": "melancholic film noir, bittersweet solitude, quiet brooding mystery, psychological tension",
+    "negative": "upbeat, comedic, oversaturated, vibrant"
+  },
+  "Peaceful & Serene": {
+    "prompt": "peaceful and serene, tranquil harmony, calming natural warmth, gentle stillness",
+    "negative": "chaotic, tense, aggressive, stormy"
+  },
+  "Ominous & Foreboding": {
+    "prompt": "ominous and foreboding, looming dread, sinister silence, dark occult suspense",
+    "negative": "cheerful, bright, friendly, whimsical"
+  },
+  "Whimsical & Playful": {
+    "prompt": "whimsical and playful, joyful wonder, vibrant imaginative charm, fairy-tale lightness",
+    "negative": "depressing, dark, scary, brooding"
+  },
+  "Sacred & Grandiose": {
+    "prompt": "sacred and grandiose, awe-inspiring majesty, solemn monumental reverie, divine stillness",
+    "negative": "mundane, cheap, silly, cartoonish"
+  },
+  "Tense & Psychological": {
+    "prompt": "tense and psychological, paranoid suspense, unsettling calm, heightened sensory urgency",
+    "negative": "relaxing, calm, lighthearted"
+  },
+  "Nostalgic & Hazy": {
+    "prompt": "nostalgic and bittersweet, warm hazy memory, golden reminiscence, dreamy sentimental glow",
+    "negative": "futuristic, sterile, aggressive"
+  },
+  "Romantic & Warm": {
+    "prompt": "intimate and romantic, tender emotional warmth, poetic softness, affectionate golden radiance",
+    "negative": "cold, hostile, sterile, scary"
+  },
+  "Cold & Desolate": {
+    "prompt": "cold and desolate, biting isolation, stark frozen quiet, haunting loneliness",
+    "negative": "warm, cozy, tropical, bustling"
+  }
+}

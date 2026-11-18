@@ -1,0 +1,43 @@
+{
+  "Hand-Painted Cel Outlines & Film Grain": {
+    "prompt": "authentic hand-drawn animation cel ink lines, subtle paint texture, natural vintage 16mm anime film grain, organic micro-imperfections",
+    "negative": "digital vector smoothness, 3d plastic skin, harsh noise reduction"
+  },
+  "G-Pen Ink Nib & Screentone Halftones": {
+    "prompt": "crisp G-pen nib ink strokes, authentic mechanical screentone dot gradations, fine manga hatching, tactile Japanese manga paper grain",
+    "negative": "digital airbrush, smooth 3d shading, full color"
+  },
+  "Shinkai Volumetric Clouds & Starry Light": {
+    "prompt": "towering hyper-detailed cumulonimbus clouds, crystalline atmospheric haze, sparkling starlight glints, prismatic rainbow flares",
+    "negative": "flat skies, muddy clouds, plain grey air"
+  },
+  "Windblown Sakura Petals & Light Motes": {
+    "prompt": "drifting windblown cherry blossom petals, luminous floating dust motes caught in light beams, gentle hair strands blowing in the wind",
+    "negative": "static still air, sterile room"
+  },
+  "Manga Speedlines & Explosive Impact Shockwaves": {
+    "prompt": "radiating manga action speedlines, sharp ink burst shards, expanding atmospheric shockwave rings, kinetic particle debris",
+    "negative": "soft peaceful stillness, calm stillness"
+  },
+  "Luminous Multifaceted Iris Reflections": {
+    "prompt": "hyper-detailed anime eyes, intricate crystalline iris patterns, glowing glossy specular reflections, vibrant multi-layered eye color depth",
+    "negative": "dull flat eyes, lifeless pupils, realistic tiny irises"
+  },
+  "Glowing Magical Embers & Particle Sparks": {
+    "prompt": "swirling luminous magic particles, glowing neon embers, floating fiery cinders, shimmering radiant aura trails",
+    "negative": "plain air, empty dark space"
+  },
+  "Dense Berserk Crosshatching & Ink Splatter": {
+    "prompt": "extraordinary dense crosshatch linework, textured sumi ink splatters, grim weathered textural depth, tactile fibrous paper tooth",
+    "negative": "clean digital vectors, smooth gradients, flat fills"
+  },
+  "Detailed Mecha Panel Lines & Stencil Decals": {
+    "prompt": "razor-sharp mecha panel lines, mechanical recessed vents, tiny warning stencils and caution decals, realistic weathered armor chipping",
+    "negative": "featureless smooth plastic, curvy organic soft surfaces"
+  },
+  "Delicate Shojo Floating Sparkles & Feathers": {
+    "prompt": "delicate floating decorative sparkles, drifting white feathers, glistening floral bokeh orbs, airy romantic elegance",
+    "negative": "grungy grime, rust, heavy blood, dark shadows"
+  }
+}
+

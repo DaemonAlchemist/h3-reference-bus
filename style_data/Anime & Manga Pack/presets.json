@@ -1,0 +1,157 @@
+{
+  "Studio Ghibli Nostalgic Fantasy": {
+    "style": "Studio Ghibli Lush Fantasy",
+    "mood": "Cozy Iyashikei Slice-of-Life",
+    "lighting": "Shinkai Golden Magic Hour",
+    "camera": "Ghibli Sweeping Panoramic Establishing View",
+    "detail": "Windblown Sakura Petals & Light Motes"
+  },
+  "Makoto Shinkai Radiant Skies": {
+    "style": "Makoto Shinkai Radiant Anime",
+    "mood": "Melancholic Twilight (Mono no Aware)",
+    "lighting": "Shinkai Golden Magic Hour",
+    "camera": "Low-Angle Heroic Anime Stance",
+    "detail": "Shinkai Volumetric Clouds & Starry Light"
+  },
+  "90s Cyberpunk OVA": {
+    "style": "80s Cyberpunk Anime (Akira / Bubblegum)",
+    "mood": "Cyberpunk Neon Solitude",
+    "lighting": "Cyberpunk Neon Backlight & Puddle Glare",
+    "camera": "Kinetic Dynamic Anime Dutch Angle",
+    "detail": "Hand-Painted Cel Outlines & Film Grain"
+  },
+  "Classic 90s TV Cel Anime": {
+    "style": "90s Retro Cel OVA",
+    "mood": "Shonen Heroic Determination",
+    "lighting": "Traditional Two-Tone Cel Shading",
+    "camera": "Classic Symmetrical Anime Stare",
+    "detail": "Hand-Painted Cel Outlines & Film Grain"
+  },
+  "Ufotable Demon Slayer Action": {
+    "style": "Ufotable Dynamic Digital VFX",
+    "mood": "Visceral Battle Frenzy",
+    "lighting": "Ufotable Radiant Elemental Glow",
+    "camera": "Extreme Foreshortened Dynamic Action",
+    "detail": "Glowing Magical Embers & Particle Sparks"
+  },
+  "Kyoto Animation Emotional Drama": {
+    "style": "Kyoto Animation Delicate Aesthetic",
+    "mood": "Melancholic Twilight (Mono no Aware)",
+    "lighting": "Classroom Afternoon Window Sunbeams",
+    "camera": "Shojo Intimate Emotional Close-Up",
+    "detail": "Luminous Multifaceted Iris Reflections"
+  },
+  "Classic B&W Manga Page": {
+    "style": "Classic Black & White Manga Page",
+    "mood": "Shonen Heroic Determination",
+    "lighting": "High-Contrast Manga Screen Fill",
+    "camera": "Manga Dynamic Panel Multi-Angle",
+    "detail": "G-Pen Ink Nib & Screentone Halftones"
+  },
+  "Berserk Dark Fantasy Seinen": {
+    "style": "Seinen Dark Fantasy Manga (Berserk Style)",
+    "mood": "Visceral Battle Frenzy",
+    "lighting": "High-Contrast Manga Screen Fill",
+    "camera": "Low-Angle Heroic Anime Stance",
+    "detail": "Dense Berserk Crosshatching & Ink Splatter"
+  },
+  "Shonen Action Manga Burst": {
+    "style": "Shonen Action Manga Ink",
+    "mood": "Shonen Heroic Determination",
+    "lighting": "High-Contrast Manga Screen Fill",
+    "camera": "Extreme Foreshortened Dynamic Action",
+    "detail": "Manga Speedlines & Explosive Impact Shockwaves"
+  },
+  "Shojo Romantic Sparkle": {
+    "style": "Shojo Romantic Manga",
+    "mood": "Romantic Doki-Doki Heartbeat",
+    "lighting": "Soft Shojo Sparkle & Prism Glow",
+    "camera": "Shojo Intimate Emotional Close-Up",
+    "detail": "Delicate Shojo Floating Sparkles & Feathers"
+  },
+  "Junji Ito Claustrophobic Horror": {
+    "style": "Junji Ito Claustrophobic Horror Manga",
+    "mood": "Supernatural Occult Dread",
+    "lighting": "High-Contrast Manga Screen Fill",
+    "camera": "Overhead High-Angle Dramatic Plunge",
+    "detail": "Dense Berserk Crosshatching & Ink Splatter"
+  },
+  "Studio Trigger Hyper-Dynamic Pop": {
+    "style": "Trigger / Gainax Hyper-Dynamic",
+    "mood": "Shonen Heroic Determination",
+    "lighting": "Ufotable Radiant Elemental Glow",
+    "camera": "Extreme Foreshortened Dynamic Action",
+    "detail": "Manga Speedlines & Explosive Impact Shockwaves"
+  },
+  "Solo Leveling Manhwa Hunter": {
+    "style": "Digital Color Webtoon / Manhwa",
+    "mood": "Shonen Heroic Determination",
+    "lighting": "Ufotable Radiant Elemental Glow",
+    "camera": "Kinetic Dynamic Anime Dutch Angle",
+    "detail": "Luminous Multifaceted Iris Reflections"
+  },
+  "MAPPA Gritty Dark Shonen": {
+    "style": "MAPPA Gritty Dark Shonen",
+    "mood": "Psychological Paranoia & Breakdown",
+    "lighting": "Dramatic Moonlit Silhouette",
+    "camera": "Over-the-Shoulder Anime Tension Framing",
+    "detail": "Hand-Painted Cel Outlines & Film Grain"
+  },
+  "Studio Shaft Surreal Avant-Garde": {
+    "style": "Shaft Surreal Avant-Garde",
+    "mood": "Psychological Paranoia & Breakdown",
+    "lighting": "Traditional Two-Tone Cel Shading",
+    "camera": "Classic Symmetrical Anime Stare",
+    "detail": "Luminous Multifaceted Iris Reflections"
+  },
+  "80s City Pop Summer Nostalgia": {
+    "style": "80s City Pop Pastel Anime",
+    "mood": "Cozy Iyashikei Slice-of-Life",
+    "lighting": "Shinkai Golden Magic Hour",
+    "camera": "Ghibli Sweeping Panoramic Establishing View",
+    "detail": "Hand-Painted Cel Outlines & Film Grain"
+  },
+  "Real Robot Mecha Hangar": {
+    "style": "Mecha / Real Robot Detailed",
+    "mood": "Shonen Heroic Determination",
+    "lighting": "Explosive Muzzle Flash & Sparks",
+    "camera": "Low-Angle Heroic Anime Stance",
+    "detail": "Detailed Mecha Panel Lines & Stencil Decals"
+  },
+  "Vampire Gothic Romantic Bloodlust": {
+    "style": "Gothic Romance Anime (Vampire Hunter D)",
+    "mood": "Supernatural Occult Dread",
+    "lighting": "Dramatic Moonlit Silhouette",
+    "camera": "Low-Angle Heroic Anime Stance",
+    "detail": "Hand-Painted Cel Outlines & Film Grain"
+  },
+  "Chibi Whimsical Mascot": {
+    "style": "Chibi / Super-Deformed (SD)",
+    "mood": "Whimsical Magical Girl Delight",
+    "lighting": "Soft Shojo Sparkle & Prism Glow",
+    "camera": "Shojo Intimate Emotional Close-Up",
+    "detail": "Delicate Shojo Floating Sparkles & Feathers"
+  },
+  "Early 2000s Supernatural Shonen": {
+    "style": "Early 2000s Digital Anime",
+    "mood": "Supernatural Occult Dread",
+    "lighting": "Dramatic Moonlit Silhouette",
+    "camera": "Kinetic Dynamic Anime Dutch Angle",
+    "detail": "Hand-Painted Cel Outlines & Film Grain"
+  },
+  "Retro 16-Bit PC-98 Adventure": {
+    "style": "Pixel Art Retro 16-Bit Anime",
+    "mood": "Melancholic Twilight (Mono no Aware)",
+    "lighting": "Traditional Two-Tone Cel Shading",
+    "camera": "Classic Symmetrical Anime Stare",
+    "detail": "Hand-Painted Cel Outlines & Film Grain"
+  },
+  "Modern Auteur Cinematographic": {
+    "style": "Modern Cinematographic Anime",
+    "mood": "Psychological Paranoia & Breakdown",
+    "lighting": "Cyberpunk Neon Backlight & Puddle Glare",
+    "camera": "Ultra-Wide Fisheye Anime Lens",
+    "detail": "Hand-Painted Cel Outlines & Film Grain"
+  }
+}
+

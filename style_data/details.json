@@ -1,0 +1,47 @@
+{
+  "None": {
+    "prompt": "",
+    "negative": ""
+  },
+  "Analogue Film Grain": {
+    "prompt": "fine organic 35mm film grain, authentic analogue silver halide texture, subtle micro-imperfections",
+    "negative": "plastic smooth, digital noise reduction, over-sharpened"
+  },
+  "Painterly Soft Textures": {
+    "prompt": "soft painterly surface textures, delicate hand-rendered edge transitions, tactile canvas tooth",
+    "negative": "hard digital edges, vector graphics"
+  },
+  "Atmospheric Rain & Haze": {
+    "prompt": "glistening rain droplets, wet reflective surfaces, drifting volumetric atmospheric mist and ambient haze",
+    "negative": "bone dry, clear sterile studio"
+  },
+  "Weathered Aged Patina": {
+    "prompt": "weathered aged patina, distressed antique textures, subtle surface cracks and historical wear",
+    "negative": "brand new, glossy plastic, modern clean"
+  },
+  "Polaroid Color Bleed & Grain": {
+    "prompt": "authentic instant film emulsion bleed, faded cyan shadows, warm magenta highlights, soft vintage vignette",
+    "negative": "clean modern digital color, razor sharp"
+  },
+  "Impasto Heavy Brushwork": {
+    "prompt": "heavy textured impasto oil strokes, visible palette knife ridges, tactile sculpted paint layer",
+    "negative": "smooth airbrush, flat print"
+  },
+  "Soft Luminous Bloom": {
+    "prompt": "soft luminous diffusion bloom, dreamy halation around specular highlights, gentle glow",
+    "negative": "harsh clipped highlights, clinical contrast"
+  },
+  "Hyper-Sharp 8K Microdetails": {
+    "prompt": "hyper-sharp microscopic surface details, crisp sub-millimeter textures, pristine 8k fidelity",
+    "negative": "blurry, smudged, low resolution"
+  },
+  "Dust Motes & Volumetric Smoke": {
+    "prompt": "dancing dust motes caught in light beams, drifting wisps of volumetric smoke, tactile air density",
+    "negative": "sterile vacuum, clear air"
+  },
+  "Subtle Lens Flare & Vignette": {
+    "prompt": "natural anamorphic horizontal lens flare, gentle peripheral optical vignetting, cinematic lens character",
+    "negative": "perfect sterile optics, synthetic graphics"
+  }
+}
+

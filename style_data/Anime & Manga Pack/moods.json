@@ -1,0 +1,43 @@
+{
+  "Shonen Heroic Determination": {
+    "prompt": "burning heroic determination, unbreakable willpower, intense shonen adrenaline, triumphant emotional resolve",
+    "negative": "hopeless, defeated, mundane, boring"
+  },
+  "Melancholic Twilight (Mono no Aware)": {
+    "prompt": "bittersweet mono no aware, poignant fleeting beauty, quiet wistful longing, golden hour nostalgia, gentle transient sadness",
+    "negative": "loud comical, hyperactive, aggressive"
+  },
+  "Cozy Iyashikei Slice-of-Life": {
+    "prompt": "warm iyashikei healing atmosphere, comforting domestic tranquility, gentle afternoon breeze, peaceful heartwarming simplicity",
+    "negative": "stressful, terrifying, violent, chaotic"
+  },
+  "Supernatural Occult Dread": {
+    "prompt": "spine-chilling supernatural occult dread, eerie spiritual tension, uncanny ghostly chill, lurking cursed presence",
+    "negative": "cheerful, funny, welcoming, sunny"
+  },
+  "Romantic Doki-Doki Heartbeat": {
+    "prompt": "fluttering doki-doki romantic tenderness, sweet innocent affection, starry-eyed daydream, breathtaking youthful romance",
+    "negative": "cynical, grim, horrific, cold"
+  },
+  "Psychological Paranoia & Breakdown": {
+    "prompt": "claustrophobic psychological paranoia, mental unraveling, harrowing suspense, fragmented reality, existential dread",
+    "negative": "relaxed, peaceful, wholesome, stable"
+  },
+  "Isekai Epic Grandeur": {
+    "prompt": "awe-inspiring high-fantasy isekai wonder, boundless mythical horizons, majestic untamed magic, epic adventure longing",
+    "negative": "cramped urban office, drab grey mundane"
+  },
+  "Cyberpunk Neon Solitude": {
+    "prompt": "solitary cyberpunk ennui, melancholic synthetic quietude, lonely rain-soaked reflections, high-tech existential emptiness",
+    "negative": "pastoral farm, cheerful festival, warm family"
+  },
+  "Whimsical Magical Girl Delight": {
+    "prompt": "sparkling magical girl ecstasy, exuberant pastel wonder, dazzling celestial empowerment, radiant joyful optimism",
+    "negative": "grimdark, bleak, depressive, realistic mundane"
+  },
+  "Visceral Battle Frenzy": {
+    "prompt": "feral battle bloodlust, desperate adrenaline rush, devastating physical impact, unhinged warrior intensity",
+    "negative": "calm, diplomatic, delicate, gentle"
+  }
+}
+

@@ -1,0 +1,67 @@
+{
+  "None": {
+    "prompt": "",
+    "negative": ""
+  },
+  "Cinematic 35mm Film": {
+    "prompt": "cinematic 35mm film photograph, fine organic film grain, authentic film emulsion, depth and tactile atmosphere",
+    "negative": "cgi, 3d render, cartoon, digital illustration, plastic skin"
+  },
+  "Anime / Cel-Shaded": {
+    "prompt": "vibrant Japanese anime aesthetic, crisp cel-shaded illustration, clean expressive linework, Studio Ghibli inspired",
+    "negative": "photorealistic, 3d render, live-action photograph, noisy"
+  },
+  "Baroque Oil Painting": {
+    "prompt": "classical Baroque oil painting, rich impasto brushwork, dramatic chiaroscuro, Old Masters technique, deep tonal richness",
+    "negative": "photograph, modern digital art, flat illustration, low quality"
+  },
+  "Cyberpunk Concept Art": {
+    "prompt": "high-tech cyberpunk concept art, sleek dystopian aesthetics, neon reflections, detailed industrial mechanical surfaces",
+    "negative": "pastoral, medieval, fantasy, historical watercolor"
+  },
+  "Vintage Polaroid 600": {
+    "prompt": "authentic vintage Polaroid 600 instant photo, soft color bleed, chemical patina, nostalgic square crop, gentle vignette",
+    "negative": "sharp digital cgi, 4k render, modern hdr"
+  },
+  "Dark Fantasy Gothic": {
+    "prompt": "dark gothic fantasy concept art, Elden Ring aesthetic, melancholic grandeur, weathered ornate stonework, dark atmospheric mood",
+    "negative": "bright cartoon, cheerful colors, modern sci-fi"
+  },
+  "Watercolor & Ink": {
+    "prompt": "delicate watercolor and ink illustration, fluid pigment washes, organic paper texture, spontaneous brush bleeds and fine pen details",
+    "negative": "heavy oil paint, 3d render, photographic"
+  },
+  "Claymation / Stop-Motion": {
+    "prompt": "tactile claymation stop-motion animation style, sculpted plasticine surfaces, subtle thumbprints, physical miniature studio lighting",
+    "negative": "smooth digital cgi, live-action photo, flat vector"
+  },
+  "Studio Fashion Portrait": {
+    "prompt": "editorial high-fashion studio photography, Vogue aesthetic, clean beauty lighting, crisp edge definition, commercial retouching",
+    "negative": "amateur photo, blurry, grainy, harsh overhead light"
+  },
+  "Ukiyo-e Woodblock Print": {
+    "prompt": "traditional Japanese ukiyo-e woodblock print, Hokusai aesthetic, flat decorative color planes, visible wood grain emboss, calligraphic contour lines",
+    "negative": "3d render, modern western comic, photographic"
+  },
+  "Graphic Novel / Comic Noir": {
+    "prompt": "dramatic graphic novel illustration, high-contrast ink crosshatching, bold shadows, Sin City aesthetic, expressive line weights",
+    "negative": "smooth 3d, soft watercolor, photorealism"
+  },
+  "90s Retro Anime": {
+    "prompt": "retro 1990s cel-animated OVA aesthetic, hand-painted background art, soft nostalgic CRT bloom, vintage color grading",
+    "negative": "modern 3d cgi, ultra-sharp vector, live action"
+  },
+  "Hyper-Clean 3D Octane": {
+    "prompt": "hyper-clean 3D Octane render, raytraced subsurface scattering, polished materials, pristine studio caustics, architectural showcase quality",
+    "negative": "blurry, noisy, grainy film, loose sketch"
+  },
+  "Impressionist Oil": {
+    "prompt": "vibrant Impressionist oil painting, Monet inspired, visible broken brushstrokes, shimmering light effects, rich textural canvas",
+    "negative": "smooth digital render, line art, sharp photo"
+  },
+  "Minimalist Vector": {
+    "prompt": "minimalist modern vector illustration, bold geometric forms, harmonious limited color palette, clean negative space",
+    "negative": "complex textures, clutter, noisy, photographic"
+  }
+}
+

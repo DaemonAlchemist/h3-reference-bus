@@ -1,0 +1,43 @@
+{
+  "Slapstick Comic Chaos": {
+    "prompt": "bouncy slapstick comic chaos, physics-defying zany energy, joyful cartoon anarchy, kinetic rubbery humor",
+    "negative": "depressing, solemn, realistic, tragic"
+  },
+  "Nostalgic Storybook Wonder": {
+    "prompt": "warm nostalgic storybook wonder, comforting fairy-tale enchantment, gentle golden hearthside warmth, timeless innocent charm",
+    "negative": "cynical, violent, gritty urban, horrific"
+  },
+  "Dark Art-Deco Noir": {
+    "prompt": "moody dark deco noir, brooding vigilant tension, shadow-cloaked urban crime drama, solemn Gothic grandeur",
+    "negative": "cheerful pastel, bright daylight, comical slapstick"
+  },
+  "Grand Disney Renaissance Majesty": {
+    "prompt": "soaring theatrical musical majesty, grand emotional triumph, sweeping fairy-tale romance, heartfelt Broadway grandeur",
+    "negative": "cynical grimdark, muted drab, small mundane"
+  },
+  "Eerie Autumnal Folk Horror": {
+    "prompt": "haunting autumnal folk mystery, antique American Gothic chill, melancholic rustling woods, quiet eerie twilight dread",
+    "negative": "tropical bright, neon sci-fi, cheerful upbeat"
+  },
+  "High-Octane Graphic Intensity": {
+    "prompt": "mythic warrior intensity, stark graphic standoff tension, raw kinetic adrenaline, indomitable heroic resolve",
+    "negative": "gentle, sleepy, comedy slapstick, romantic"
+  },
+  "Tactile Gothic Whimsy": {
+    "prompt": "delightfully spooky gothic whimsy, quirky macabre charm, handcrafted eccentric fairy-tale enchantment, eccentric curiosity",
+    "negative": "bland corporate, sterile modern, sunny realistic"
+  },
+  "Dystopian Kinetic Rebellion": {
+    "prompt": "defiant urban street rebellion, vibrant raw kinetic defiance, underground graffiti counter-culture, high-stakes revolutionary grit",
+    "negative": "pastoral peaceful, royal palace, wholesome domestic"
+  },
+  "Saturday Morning Heroic Optimism": {
+    "prompt": "vibrant Saturday morning heroic optimism, adventurous retro camaraderie, wholesome triumph over evil, nostalgic retro excitement",
+    "negative": "hopeless, nihilistic, bleak, terrifying"
+  },
+  "Heartfelt Pixar Melancholy & Joy": {
+    "prompt": "bittersweet emotional depth, profoundly heartfelt warmth, tearful nostalgic joy, poetic celebration of life and memory",
+    "negative": "shallow slapstick, cynical irony, cold sterile"
+  }
+}
+

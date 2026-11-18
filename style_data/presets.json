@@ -1,0 +1,87 @@
+{
+  "Custom": {
+    "style": "None",
+    "mood": "None",
+    "lighting": "None",
+    "camera": "None",
+    "detail": "None"
+  },
+  "Blade Runner Cyberpunk": {
+    "style": "Cyberpunk Concept Art",
+    "mood": "Gritty & Dystopian",
+    "lighting": "Neon High-Contrast",
+    "camera": "Wide-Angle Dramatic (24mm)",
+    "detail": "Atmospheric Rain & Haze"
+  },
+  "Studio Ghibli Watercolor": {
+    "style": "Anime / Cel-Shaded",
+    "mood": "Peaceful & Serene",
+    "lighting": "Golden Hour Warm Volumetric",
+    "camera": "Panoramic Scenic View",
+    "detail": "Painterly Soft Textures"
+  },
+  "Moody 35mm Street Noir": {
+    "style": "Cinematic 35mm Film",
+    "mood": "Melancholic Noir",
+    "lighting": "Chiaroscuro Deep Shadow",
+    "camera": "Intimate 50mm Lens (f/1.8)",
+    "detail": "Analogue Film Grain"
+  },
+  "Dark Fantasy Gothic": {
+    "style": "Dark Fantasy Gothic",
+    "mood": "Ominous & Foreboding",
+    "lighting": "Candlelit Warm Amber",
+    "camera": "Low-Angle Heroic",
+    "detail": "Weathered Aged Patina"
+  },
+  "Vintage Polaroid Snapshot": {
+    "style": "Vintage Polaroid 600",
+    "mood": "Nostalgic & Hazy",
+    "lighting": "Direct Flash Harsh Shadows",
+    "camera": "Intimate 50mm Lens (f/1.8)",
+    "detail": "Polaroid Color Bleed & Grain"
+  },
+  "Baroque Oil Masterpiece": {
+    "style": "Baroque Oil Painting",
+    "mood": "Sacred & Grandiose",
+    "lighting": "Chiaroscuro Deep Shadow",
+    "camera": "Classic Symmetrical Medium Shot",
+    "detail": "Impasto Heavy Brushwork"
+  },
+  "Ethereal Dreamscape": {
+    "style": "Watercolor & Ink",
+    "mood": "Ethereal & Dreamy",
+    "lighting": "Bioluminescent Glow",
+    "camera": "Wide-Angle Dramatic (24mm)",
+    "detail": "Soft Luminous Bloom"
+  },
+  "Editorial Vogue Fashion": {
+    "style": "Studio Fashion Portrait",
+    "mood": "Tense & Psychological",
+    "lighting": "Studio Three-Point Lighting",
+    "camera": "Intimate 85mm Portrait (f/1.4)",
+    "detail": "Hyper-Sharp 8K Microdetails"
+  },
+  "Traditional Ukiyo-e Woodblock": {
+    "style": "Ukiyo-e Woodblock Print",
+    "mood": "Peaceful & Serene",
+    "lighting": "Overcast Diffused Softbox",
+    "camera": "Classic Symmetrical Medium Shot",
+    "detail": "Painterly Soft Textures"
+  },
+  "90s Hand-Drawn Anime OVA": {
+    "style": "90s Retro Anime",
+    "mood": "Nostalgic & Hazy",
+    "lighting": "Moody Moonlight & Fog",
+    "camera": "Dutch Angle Dynamic",
+    "detail": "Analogue Film Grain"
+  },
+  "Wes Anderson Symmetrical": {
+    "style": "Cinematic 35mm Film",
+    "mood": "Whimsical & Playful",
+    "lighting": "Dappled Sunlight Through Leaves",
+    "camera": "Classic Symmetrical Medium Shot",
+    "detail": "Analogue Film Grain"
+  }
+}
+

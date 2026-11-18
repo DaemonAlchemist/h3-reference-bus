@@ -1,0 +1,43 @@
+{
+  "Hand-Painted Gouache & Watercolor Background Art": {
+    "prompt": "lush hand-painted gouache background textures, soft watercolor wash edges, organic paper tooth, classic animation cel layering",
+    "negative": "digital vector smoothness, 3d plastic skin, harsh noise reduction"
+  },
+  "Tactile Plasticine Thumbprints & Armature": {
+    "prompt": "tangible plasticine clay surface, subtle artisan thumbprint impressions, micro-fiber puppet clothing textures, real physical materials",
+    "negative": "smooth computer cgi, flat 2d lines, digital airbrush"
+  },
+  "Comic Halftone Dots & CMYK Color Separation": {
+    "prompt": "stylized Ben-Day halftone screen dots, subtle CMYK color register misprints, hand-drawn digital ink hatching, spray paint splatter",
+    "negative": "smooth photorealistic shading, plain watercolor, clean vector"
+  },
+  "Expressive Paintbrush Strokes & Digital Matte Texture": {
+    "prompt": "visible impasto digital brushstrokes, rich textural palette knife scumbling, dynamic matte painting finish, Arcane inspired craft",
+    "negative": "flat single-tone colors, generic 3d polygon, airbrush blur"
+  },
+  "Vintage 1930s Film Scratches & Sepia Grain": {
+    "prompt": "flickering vintage 35mm film grain, vertical emulsion scratches, subtle projector gate weave, soft sepia halo bloom",
+    "negative": "pristine 4k digital, sharp modern vector, clean cgi"
+  },
+  "Backlit Glowing Animation Cel Effects": {
+    "prompt": "vibrant optical printer backlit animation effects, luminous magical rim halation, glowing cel transparency, rich saturated glow",
+    "negative": "dull matte, flat unlit, modern cold digital"
+  },
+  "Bold Graphic Ink Outlines & Flat Color Planes": {
+    "prompt": "thick hand-inked cartoon contour lines, clean graphic weight variation, flat bold color blocking, modernist animation design",
+    "negative": "feathered realistic shading, complex 3d bump maps, fuzzy edges"
+  },
+  "Vintage Storybook Paper & Woodcut Texture": {
+    "prompt": "aged parchment paper grain, rustic woodcut crosshatch engraving, nostalgic autumn leaf debris, sepia ink patina",
+    "negative": "modern slick plastic, glossy photo, neon glow"
+  },
+  "Lush Subsurface Scattering & Stylized Fur": {
+    "prompt": "physically-based subsurface light scattering, tactile stylized fur and fabric weaves, pristine Pixar-grade material shaders",
+    "negative": "low polygon, untextured rough model, flat 2d"
+  },
+  "Dynamic Action Dust Puffs & Impact Stars": {
+    "prompt": "classic hand-drawn cartoon impact stars, spinning dust clouds, exaggerated speed puffs, comic impact lettering",
+    "negative": "serious realistic smoke, photorealistic dust"
+  }
+}
+

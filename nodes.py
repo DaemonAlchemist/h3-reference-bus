@@ -33,6 +33,7 @@ from comfy_api.latest import io
 from comfy_api.latest._ui import PreviewText
 
 H3RefBusType = io.Custom("H3_REF_BUS")
+H3ImageRefBusType = io.Custom("H3_IMAGE_REF_BUS")
 H3VideoSettingsBusType = io.Custom("H3_VIDEO_SETTINGS_BUS")
 H3NamedRefBusType = io.Custom("H3_NAMED_REF_BUS")
 
@@ -77,7 +78,7 @@ class MiniMaxH3CreateReferenceBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3CreateReferenceBus",
             display_name="Create MiniMax H3 Reference Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Reference",
             description="Bundle MiniMax H3 multimodal reference assets (images, videos, soundtracks, audios) into a single bus connection for Ref2VA workflows.",
             inputs=[
                 io.Combo.Input(
@@ -359,7 +360,7 @@ class MiniMaxH3ExpandReferenceBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3ExpandReferenceBus",
             display_name="Expand MiniMax H3 Reference Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Reference",
             description="Unpack a MiniMax H3 reference bus into individual reference images (<Picture 1..9>), videos (<Video 1..3>), soundtracks, and audios (<Audio 1..3>).",
             inputs=[
                 H3RefBusType.Input(
@@ -399,6 +400,231 @@ class MiniMaxH3ExpandReferenceBus(io.ComfyNode):
         return io.NodeOutput(*outputs)
 
 
+class MiniMaxH3CreateImageReferenceBus(io.ComfyNode):
+    """Create a MiniMax H3 image reference bus bundling up to 16 reference images."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="MiniMaxH3CreateImageReferenceBus",
+            display_name="Create MiniMax H3 Image Reference Bus",
+            category="ATP/Bus/Reference",
+            description="Bundle up to 16 MiniMax H3 reference images into a single bus connection for H3 Image workflows.",
+            search_aliases=["Create Image Reference Bus", "Image Reference Bus", "MiniMax H3 Image Bus", "H3 Image Reference Bus", "CreateImageReferenceBus"],
+            inputs=[
+                io.Combo.Input(
+                    "bus_behavior",
+                    options=["append", "overwrite"],
+                    default="append",
+                    tooltip=(
+                        "How new references are merged when an existing bus is connected:\n"
+                        "- 'append': Increments indices so new inputs are added after existing items (e.g. 2 existing images + 1 new = <Picture 3>).\n"
+                        "- 'overwrite': Replaces existing references at the same slot indices."
+                    ),
+                ),
+                io.MultiType.Input(
+                    "bus",
+                    types=[H3ImageRefBusType, H3RefBusType, H3NamedRefBusType],
+                    optional=True,
+                    tooltip="Optional existing H3 image reference bus, standard reference bus, or named reference bus to extend or override.",
+                ),
+                io.Autogrow.Input(
+                    "ref_images",
+                    optional=True,
+                    template=io.Autogrow.TemplatePrefix(
+                        input=io.Image.Input(
+                            "ref_image",
+                            tooltip="Reference image (up to 16, referenced in prompt as <Picture 1>..<Picture 16>)",
+                        ),
+                        prefix="ref_image_",
+                        min=0,
+                        max=16,
+                    ),
+                ),
+            ],
+            outputs=[H3ImageRefBusType.Output("bus", display_name="bus")],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        bus_behavior: str = "append",
+        bus: dict[str, Any] | None = None,
+        ref_images: dict[str, Any] | None = None,
+        **kwargs,
+    ) -> io.NodeOutput:
+        bus = bus or {}
+        existing_images = dict(bus.get("ref_images", {}))
+
+        # Support incoming named bus entities if ref_images is empty
+        if not existing_images and "entities" in bus:
+            idx = 0
+            for ent in bus["entities"]:
+                v = ent.get("value")
+                if v is not None and (hasattr(v, "shape") and len(v.shape) == 4) and idx < 16:
+                    existing_images[f"ref_image_{idx}"] = v
+                    idx += 1
+
+        out_bus = {
+            "ref_images": existing_images,
+        }
+
+        inherited_count = len(out_bus["ref_images"])
+
+        # Collect raw inputs from autogrow dict and kwargs
+        all_images = dict(ref_images or {})
+        for k, v in kwargs.items():
+            if v is None:
+                continue
+            if k.startswith("ref_image_"):
+                all_images[k] = v
+
+        added_count = 0
+
+        if bus_behavior == "append":
+            sorted_images = sorted(
+                [(int(k.split("_")[-1]), v) for k, v in all_images.items() if v is not None and k.split("_")[-1].isdigit()],
+                key=lambda x: x[0],
+            )
+            existing_img_indices = [
+                int(k.split("_")[-1]) for k in out_bus["ref_images"].keys()
+                if k.split("_")[-1].isdigit()
+            ]
+            next_img_idx = (max(existing_img_indices) + 1) if existing_img_indices else 0
+
+            for _, img in sorted_images:
+                if next_img_idx >= 16:
+                    raise ValueError(
+                        f"MiniMax H3 Image models support a maximum of 16 reference images (<Picture 1>..<Picture 16>). "
+                        f"Incoming bus has {len(existing_img_indices)} images; cannot add more."
+                    )
+                out_bus["ref_images"][f"ref_image_{next_img_idx}"] = img
+                next_img_idx += 1
+                added_count += 1
+        else:
+            # Overwrite mode: replace matching slot keys directly
+            for k, v in all_images.items():
+                if v is not None:
+                    out_bus["ref_images"][k] = v
+                    added_count += 1
+
+        # Populate entities/ordered/by_name for cross-bus compatibility
+        out_bus["entities"] = [
+            {"name": k, "value": v, "type": "IMAGE"}
+            for k, v in sorted(
+                out_bus["ref_images"].items(),
+                key=lambda x: int(x[0].split("_")[-1]) if x[0].split("_")[-1].isdigit() else 0,
+            )
+        ]
+        out_bus["ordered"] = [e["value"] for e in out_bus["entities"]]
+        out_bus["by_name"] = {e["name"]: e["value"] for e in out_bus["entities"]}
+
+        total_img = len(out_bus["ref_images"])
+        img_tag_str = (
+            f"<Picture 1..{total_img}>"
+            if total_img > 1
+            else ("<Picture 1>" if total_img == 1 else "none")
+        )
+
+        summary_text = (
+            f"[H3 Image Reference Bus]\n"
+            f"Mode: {bus_behavior}\n"
+            f"Incoming: {inherited_count} img\n"
+            f"Added: +{added_count} img\n"
+            f"Total Bus: {total_img} img ({img_tag_str})"
+        )
+
+        return io.NodeOutput(out_bus, ui=PreviewText(summary_text))
+
+
+class CreateImageReferenceBus(MiniMaxH3CreateImageReferenceBus):
+    """Create a MiniMax H3 image reference bus bundling up to 16 reference images (alias)."""
+
+    @classmethod
+    def define_schema(cls):
+        schema = super().define_schema()
+        return io.Schema(
+            node_id="CreateImageReferenceBus",
+            display_name="Create MiniMax H3 Image Reference Bus",
+            category="ATP/Bus/Reference",
+            description=schema.description,
+            search_aliases=schema.search_aliases,
+            inputs=schema.inputs,
+            outputs=schema.outputs,
+        )
+
+
+class MiniMaxH3ExpandImageReferenceBus(io.ComfyNode):
+    """Expand a MiniMax H3 image reference bus back into 16 individual reference image outputs."""
+
+    @classmethod
+    def define_schema(cls):
+        outputs = []
+        # 16 Reference Images (<Picture 1> .. <Picture 16>)
+        for i in range(16):
+            outputs.append(
+                io.Image.Output(
+                    f"ref_image_{i}",
+                    display_name=f"ref_image_{i+1} (<Picture {i+1}>)",
+                    tooltip=f"Reference image {i+1}, referenced in prompt as <Picture {i+1}>",
+                )
+            )
+
+        return io.Schema(
+            node_id="MiniMaxH3ExpandImageReferenceBus",
+            display_name="Expand MiniMax H3 Image Reference Bus",
+            category="ATP/Bus/Reference",
+            description="Unpack a MiniMax H3 image reference bus into 16 individual reference images (<Picture 1..16>).",
+            search_aliases=["Expand Image Reference Bus", "Image Reference Bus", "MiniMax H3 Image Bus", "H3 Image Reference Bus", "ExpandImageReferenceBus"],
+            inputs=[
+                io.MultiType.Input(
+                    "bus",
+                    types=[H3ImageRefBusType, H3RefBusType, H3NamedRefBusType],
+                    tooltip="MiniMax H3 image reference bus to expand into 16 individual reference image outputs.",
+                ),
+            ],
+            outputs=outputs,
+        )
+
+    @classmethod
+    def execute(cls, bus: dict[str, Any] | None = None) -> io.NodeOutput:
+        bus = bus or {}
+        ref_images = bus.get("ref_images", {})
+
+        # If ref_images is empty but entities exist (e.g. from Named Bus)
+        if not ref_images and "entities" in bus:
+            ref_images = {}
+            idx = 0
+            for ent in bus["entities"]:
+                v = ent.get("value")
+                if v is not None and (hasattr(v, "shape") and len(v.shape) == 4) and idx < 16:
+                    ref_images[f"ref_image_{idx}"] = v
+                    idx += 1
+
+        outputs = []
+        for i in range(16):
+            outputs.append(_extract_indexed_item(ref_images, "ref_image_", i))
+
+        return io.NodeOutput(*outputs)
+
+
+class ExpandImageReferenceBus(MiniMaxH3ExpandImageReferenceBus):
+    """Expand a MiniMax H3 image reference bus back into 16 individual reference image outputs (alias)."""
+
+    @classmethod
+    def define_schema(cls):
+        schema = super().define_schema()
+        return io.Schema(
+            node_id="ExpandImageReferenceBus",
+            display_name="Expand MiniMax H3 Image Reference Bus",
+            category="ATP/Bus/Reference",
+            description=schema.description,
+            search_aliases=schema.search_aliases,
+            inputs=schema.inputs,
+            outputs=schema.outputs,
+        )
+
+
 class MiniMaxH3CreateNamedReferenceBus(io.ComfyNode):
     """Create a Named Reference Bus bundling arbitrary multimodal references without limit."""
 
@@ -407,7 +633,7 @@ class MiniMaxH3CreateNamedReferenceBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3CreateNamedReferenceBus",
             display_name="Create Named Reference Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Named",
             description="Bundle an unlimited number of multimodal reference assets (images, audios, videos, etc.) into a single Named Reference Bus.",
             search_aliases=["Create Named Reference Bus", "Named Reference Bus", "NamedReferenceBus", "CreateReferenceBus"],
             accept_all_inputs=True,
@@ -424,9 +650,9 @@ class MiniMaxH3CreateNamedReferenceBus(io.ComfyNode):
                 ),
                 io.MultiType.Input(
                     "bus",
-                    types=[H3NamedRefBusType, H3RefBusType],
+                    types=[H3NamedRefBusType, H3RefBusType, H3ImageRefBusType],
                     optional=True,
-                    tooltip="Optional existing Named Reference Bus or H3 Reference Bus to extend.",
+                    tooltip="Optional existing Named Reference Bus, H3 Reference Bus, or H3 Image Reference Bus to extend.",
                 ),
                 io.AnyType.Input(
                     "entity_0",
@@ -583,7 +809,7 @@ class CreateNamedReferenceBus(MiniMaxH3CreateNamedReferenceBus):
         return io.Schema(
             node_id="CreateNamedReferenceBus",
             display_name="Create Named Reference Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Named",
             description=schema.description,
             search_aliases=schema.search_aliases,
             accept_all_inputs=True,
@@ -602,13 +828,13 @@ class MiniMaxH3ExpandNamedReferenceBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3ExpandNamedReferenceBus",
             display_name="Expand Named Reference Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Named",
             description="Unpack a Named Reference Bus into individual outputs for every attached entity, labeled by filename.",
             search_aliases=["Expand Named Reference Bus", "Named Reference Bus", "NamedReferenceBus", "ExpandReferenceBus"],
             inputs=[
                 io.MultiType.Input(
                     "bus",
-                    types=[H3NamedRefBusType, H3RefBusType],
+                    types=[H3NamedRefBusType, H3RefBusType, H3ImageRefBusType],
                     tooltip="Named Reference Bus to expand into individual entity outputs.",
                 ),
             ],
@@ -647,7 +873,7 @@ class ExpandNamedReferenceBus(MiniMaxH3ExpandNamedReferenceBus):
         return io.Schema(
             node_id="ExpandNamedReferenceBus",
             display_name="Expand Named Reference Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Named",
             description=schema.description,
             search_aliases=schema.search_aliases,
             inputs=schema.inputs,
@@ -663,13 +889,13 @@ class MiniMaxH3MapNamedReferenceBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3MapNamedReferenceBus",
             display_name="Map Named Bus to H3 Reference Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Named",
             description="Map entities from an incoming Named Reference Bus into standard MiniMax H3 reference slots (<Picture 1..9>, <Video 1..3>, <Audio 1..3>).",
             search_aliases=["Map Named Reference Bus", "Named Reference Bus to H3", "MapNamedReferenceBus", "NamedBusToH3Bus"],
             inputs=[
                 io.MultiType.Input(
                     "bus",
-                    types=[H3NamedRefBusType, H3RefBusType],
+                    types=[H3NamedRefBusType, H3RefBusType, H3ImageRefBusType],
                     tooltip="Incoming Named Reference Bus to map to standard H3 reference slots.",
                 ),
                 io.String.Input(
@@ -824,7 +1050,7 @@ class MapNamedReferenceBus(MiniMaxH3MapNamedReferenceBus):
         return io.Schema(
             node_id="MapNamedReferenceBus",
             display_name="Map Named Bus to H3 Reference Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Named",
             description=schema.description,
             search_aliases=schema.search_aliases,
             inputs=schema.inputs,
@@ -844,7 +1070,7 @@ class MiniMaxH3CreateVideoSettingsBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3CreateVideoSettingsBus",
             display_name="Create MiniMax H3 Video Settings Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Settings",
             description="Bundle global video settings (model, clip, video VAE, audio VAE, width, height, steps) into a single bus for MiniMax H3 workflows.",
             inputs=[
                 H3VideoSettingsBusType.Input(
@@ -913,7 +1139,7 @@ class MiniMaxH3ExpandVideoSettingsBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3ExpandVideoSettingsBus",
             display_name="Expand MiniMax H3 Video Settings Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Settings",
             description="Unpack a MiniMax H3 video settings bus into model, clip, video VAE, audio VAE, width, height, and steps.",
             inputs=[
                 H3VideoSettingsBusType.Input(
@@ -954,7 +1180,7 @@ class MiniMaxH3ModelFromBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3ModelFromBus",
             display_name="Model from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract the diffusion model (MODEL) from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[io.Model.Output("model", display_name="model", tooltip="Extracted diffusion model")],
@@ -974,7 +1200,7 @@ class MiniMaxH3ClipFromBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3ClipFromBus",
             display_name="CLIP from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract the CLIP text encoder from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[io.Clip.Output("clip", display_name="clip", tooltip="Extracted CLIP model")],
@@ -994,7 +1220,7 @@ class MiniMaxH3VideoVaeFromBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3VideoVaeFromBus",
             display_name="Video VAE from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract the Video VAE from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[io.Vae.Output("vae", display_name="video_vae", tooltip="Extracted Video VAE")],
@@ -1014,7 +1240,7 @@ class MiniMaxH3AudioVaeFromBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3AudioVaeFromBus",
             display_name="Audio VAE from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract the Audio VAE from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[io.Vae.Output("audio_vae", display_name="audio_vae", tooltip="Extracted Audio VAE")],
@@ -1034,7 +1260,7 @@ class MiniMaxH3ResolutionFromBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3ResolutionFromBus",
             display_name="Resolution from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract width and height integers from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[
@@ -1057,7 +1283,7 @@ class MiniMaxH3WidthFromBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3WidthFromBus",
             display_name="Width from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract width integer from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[io.Int.Output("width", display_name="width", tooltip="Output video width")],
@@ -1077,7 +1303,7 @@ class MiniMaxH3HeightFromBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3HeightFromBus",
             display_name="Height from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract height integer from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[io.Int.Output("height", display_name="height", tooltip="Output video height")],
@@ -1097,7 +1323,7 @@ class MiniMaxH3VAEsFromBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3VAEsFromBus",
             display_name="VAEs from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract both Video VAE and Audio VAE from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[
@@ -1120,7 +1346,7 @@ class MiniMaxH3StepsFromBus(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3StepsFromBus",
             display_name="Steps from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract sampling steps integer from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[io.Int.Output("steps", display_name="steps", tooltip="Sampling steps")],
@@ -1140,7 +1366,7 @@ class GetStepsFromBus(io.ComfyNode):
         return io.Schema(
             node_id="GetStepsFromBus",
             display_name="Get Steps from Bus",
-            category="Bus/MiniMax",
+            category="ATP/Bus/Extractors",
             description="Extract sampling steps integer from a MiniMax H3 video settings bus.",
             inputs=[H3VideoSettingsBusType.Input("bus", tooltip="Video settings bus")],
             outputs=[io.Int.Output("steps", display_name="steps", tooltip="Sampling steps")],
@@ -1243,7 +1469,7 @@ class MiniMaxH3SaveNestedLatent(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3SaveNestedLatent",
             display_name="Save MiniMax H3 AV Latent (NestedTensor)",
-            category="Bus/MiniMax/Latent",
+            category="ATP/Latent",
             description=(
                 "Saves MiniMax H3 joint video and synchronized audio latents in NestedTensor format to disk as .latent (safetensors). "
                 "Prevents crashes caused by standard SaveLatent on multi-stream NestedTensors and attaches part numbering, frame count, "
@@ -1431,7 +1657,7 @@ class MiniMaxH3LoadNestedLatent(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3LoadNestedLatent",
             display_name="Load MiniMax H3 AV Latent (NestedTensor)",
-            category="Bus/MiniMax/Latent",
+            category="ATP/Latent",
             description=(
                 "Loads MiniMax H3 joint video and synchronized audio latents saved in NestedTensor format from input or output directories. "
                 "Reconstructs the native NestedTensor((video, audio)) object required by MiniMax H3 samplers, continuation nodes, and VAE decoders. "
@@ -1672,7 +1898,7 @@ class MiniMaxH3ConcatAVLatent(io.ComfyNode):
         return io.Schema(
             node_id="MiniMaxH3ConcatAVLatent",
             display_name="Concat MiniMax H3 AV Latents",
-            category="Bus/MiniMax/Latent",
+            category="ATP/Latent",
             description=(
                 "Stitches two or three MiniMax H3 joint AV latents (NestedTensor) together along their temporal axes "
                 "(video along dim 2, audio along dim -1). Maintains synchronized video and audio lengths for full-length long video decode."
@@ -1815,7 +2041,7 @@ class LoadText(io.ComfyNode):
         return io.Schema(
             node_id="LoadText",
             display_name="Load Text",
-            category="text",
+            category="ATP/Text",
             description=(
                 "Loads text from a local file (e.g. .txt, .md, .json, .yaml, .prompt) and returns "
                 "the entire contents as a string. Features a 'Choose File' button to select files "
@@ -2027,7 +2253,7 @@ class MiniMaxH3LoadText(LoadText):
         return io.Schema(
             node_id="MiniMaxH3LoadText",
             display_name="Load Text (MiniMax H3)",
-            category="Bus/MiniMax",
+            category="ATP/Text",
             description=schema.description,
             search_aliases=schema.search_aliases,
             inputs=schema.inputs,
@@ -2125,6 +2351,455 @@ def _open_system_file_dialog(initial_dir: str | None = None) -> str | None:
     return None
 
 
+# ==============================================================================
+# Modular Style Composer Data & Node
+# ==============================================================================
+
+STYLE_DATA_DIR = os.path.join(os.path.dirname(__file__), "style_data")
+
+_STYLE_DATA_CACHE: dict[str, dict[str, Any]] = {}
+
+
+def get_style_data_dir() -> str:
+    os.makedirs(STYLE_DATA_DIR, exist_ok=True)
+    return STYLE_DATA_DIR
+
+
+def _load_json_file(file_path: str) -> dict[str, Any]:
+    if not os.path.isfile(file_path):
+        return {}
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if isinstance(data, dict):
+                return data
+    except Exception as e:
+        print(f"[ModularStyleComposer] Error loading {file_path}: {e}")
+    return {}
+
+
+def _load_single_json(filename: str) -> dict[str, Any]:
+    return _load_json_file(os.path.join(STYLE_DATA_DIR, filename))
+
+
+def reload_style_data() -> dict[str, dict[str, Any]]:
+    global _STYLE_DATA_CACHE
+
+    root_presets = _load_single_json("presets.json")
+    root_styles = _load_single_json("styles.json")
+    root_moods = _load_single_json("moods.json")
+    root_lighting = _load_single_json("lighting.json")
+    root_cameras = _load_single_json("cameras.json")
+    root_details = _load_single_json("details.json")
+
+    all_presets = dict(root_presets)
+    all_styles = dict(root_styles)
+    all_moods = dict(root_moods)
+    all_lighting = dict(root_lighting)
+    all_cameras = dict(root_cameras)
+    all_details = dict(root_details)
+
+    # Scan for style pack sub-folders in style_data
+    if os.path.isdir(STYLE_DATA_DIR):
+        for entry in sorted(os.listdir(STYLE_DATA_DIR)):
+            sub_path = os.path.join(STYLE_DATA_DIR, entry)
+            if os.path.isdir(sub_path) and not entry.startswith((".", "_")):
+                pack_name = entry.strip()
+
+                pack_styles = _load_json_file(os.path.join(sub_path, "styles.json"))
+                pack_moods = _load_json_file(os.path.join(sub_path, "moods.json"))
+                pack_lighting = _load_json_file(os.path.join(sub_path, "lighting.json"))
+                pack_cameras = _load_json_file(os.path.join(sub_path, "cameras.json"))
+                pack_details = _load_json_file(os.path.join(sub_path, "details.json"))
+                pack_presets = _load_json_file(os.path.join(sub_path, "presets.json"))
+
+                pack_key_map: dict[tuple[str, str], str] = {}
+
+                def _append_pack_items(target_dict: dict[str, Any], pack_dict: dict[str, Any], cat_name: str):
+                    for k, v in pack_dict.items():
+                        if k.lower() in ("none", "custom"):
+                            continue
+                        suffixed = f"{k} ({pack_name})"
+                        target_dict[suffixed] = v
+                        pack_key_map[(cat_name, k)] = suffixed
+
+                _append_pack_items(all_styles, pack_styles, "style")
+                _append_pack_items(all_moods, pack_moods, "mood")
+                _append_pack_items(all_lighting, pack_lighting, "lighting")
+                _append_pack_items(all_cameras, pack_cameras, "camera")
+                _append_pack_items(all_details, pack_details, "detail")
+
+                # Append pack presets
+                for p_name, p_val in pack_presets.items():
+                    if p_name.lower() in ("custom",):
+                        continue
+                    suffixed_preset_name = f"{p_name} ({pack_name})"
+                    resolved_preset_data = {}
+                    if isinstance(p_val, dict):
+                        for slot_key in ("style", "mood", "lighting", "camera", "detail"):
+                            slot_val = p_val.get(slot_key, "None")
+                            if (slot_key, slot_val) in pack_key_map:
+                                resolved_preset_data[slot_key] = pack_key_map[(slot_key, slot_val)]
+                            else:
+                                resolved_preset_data[slot_key] = slot_val
+                    all_presets[suffixed_preset_name] = resolved_preset_data
+
+    # Ensure minimum fallbacks if empty
+    if "Custom" not in all_presets:
+        all_presets = {
+            "Custom": {
+                "style": "None",
+                "mood": "None",
+                "lighting": "None",
+                "camera": "None",
+                "detail": "None",
+            },
+            **all_presets,
+        }
+    for cat_dict in (all_styles, all_moods, all_lighting, all_cameras, all_details):
+        if "None" not in cat_dict:
+            cat_dict["None"] = {"prompt": "", "negative": ""}
+
+    _STYLE_DATA_CACHE = {
+        "presets": all_presets,
+        "styles": all_styles,
+        "moods": all_moods,
+        "lighting": all_lighting,
+        "cameras": all_cameras,
+        "details": all_details,
+    }
+    return _STYLE_DATA_CACHE
+
+
+def get_cached_style_data() -> dict[str, dict[str, Any]]:
+    if not _STYLE_DATA_CACHE:
+        reload_style_data()
+    return _STYLE_DATA_CACHE
+
+
+def _get_preset_names() -> list[str]:
+    data = get_cached_style_data()
+    keys = list(data.get("presets", {}).keys())
+    if "Custom" in keys:
+        keys.remove("Custom")
+        keys.insert(0, "Custom")
+    return keys or ["Custom"]
+
+
+def _get_category_names(cat_key: str) -> list[str]:
+    data = get_cached_style_data()
+    keys = list(data.get(cat_key, {}).keys())
+    if "None" in keys:
+        keys.remove("None")
+        keys.insert(0, "None")
+    return keys or ["None"]
+
+
+def _extract_prompt_and_negative(entry: Any) -> tuple[str, str]:
+    if not entry:
+        return "", ""
+    if isinstance(entry, str):
+        return entry.strip(), ""
+    if isinstance(entry, dict):
+        p = str(entry.get("prompt", "") or "").strip()
+        n = str(entry.get("negative", "") or "").strip()
+        return p, n
+    return str(entry).strip(), ""
+
+
+def compile_style_prompt(
+    base_prompt: str = "",
+    preset: str = "Custom",
+    style: str = "None",
+    mood: str = "None",
+    lighting: str = "None",
+    camera: str = "None",
+    detail: str = "None",
+    format_style: str = "Natural Paragraph",
+    format_string: str = "",
+    placement: str = "Append Style",
+    negative_prompt_input: str = "",
+) -> tuple[str, str, str]:
+    data = get_cached_style_data()
+
+    style_p, style_n = _extract_prompt_and_negative(data.get("styles", {}).get(style))
+    mood_p, mood_n = _extract_prompt_and_negative(data.get("moods", {}).get(mood))
+    light_p, light_n = _extract_prompt_and_negative(data.get("lighting", {}).get(lighting))
+    cam_p, cam_n = _extract_prompt_and_negative(data.get("cameras", {}).get(camera))
+    det_p, det_n = _extract_prompt_and_negative(data.get("details", {}).get(detail))
+
+    # 1. Compile Style Description
+    if format_style == "Natural Paragraph":
+        tmpl = (format_string or "").strip()
+        if not tmpl:
+            tmpl = "{prompt}. Rendered as {style}, evoking a {mood} atmosphere. Lit by {lighting}, {camera}, featuring {detail}."
+
+        has_prompt_tag = "{prompt}" in tmpl or "{base_prompt}" in tmpl
+
+        res = tmpl.replace("{prompt}", base_prompt.strip()).replace("{base_prompt}", base_prompt.strip())
+        res = res.replace("{style}", style_p)
+        res = res.replace("{mood}", mood_p)
+        res = res.replace("{lighting}", light_p)
+        res = res.replace("{camera}", cam_p)
+        res = res.replace("{detail}", det_p)
+        res = res.replace("{preset}", preset if preset != "Custom" else "")
+
+        # Clean duplicate / clashing preposition/verb phrases (e.g. "framed with shot on", "framed with captured on")
+        def _clean_text(s: str) -> str:
+            s = re.sub(
+                r"\b(framed with|framed in|shot with|shot in|captured with|taken with)\s+(shot on|captured on|taken on|shot with|captured with|captured in|shot in|framed from|composed as|composed at)\b",
+                r"\2",
+                s,
+                flags=re.IGNORECASE,
+            )
+            s = re.sub(
+                r"\b(shot on|captured on|taken on)\s+(shot on|captured on|taken on)\b",
+                r"\1",
+                s,
+                flags=re.IGNORECASE,
+            )
+            s = re.sub(r"\blit by\s+bathed in\b", "bathed in", s, flags=re.IGNORECASE)
+            s = re.sub(r"\b(atmosphere|mood)\s+(atmosphere|mood)\b", r"\1", s, flags=re.IGNORECASE)
+            s = re.sub(r"\b(featuring|with)\s+(featuring|with)\b", r"\1", s, flags=re.IGNORECASE)
+            s = re.sub(r"\b(rendered as|rendered in a|rendered in)\s*,\s*", "", s, flags=re.IGNORECASE)
+            s = re.sub(r"\b(evoking an?|with an?)\s*(atmosphere|mood)\s*,\s*", "", s, flags=re.IGNORECASE)
+            s = re.sub(r"\b(lit by|illuminated by)\s*,\s*", "", s, flags=re.IGNORECASE)
+            s = re.sub(
+                r"\b(framed with an?|framed with|shot with an?|shot with|captured with an?|captured with)\s*,\s*",
+                "",
+                s,
+                flags=re.IGNORECASE,
+            )
+            s = re.sub(r"\b(featuring|with)\s*[.,;]", ".", s, flags=re.IGNORECASE)
+            s = re.sub(r",\s*,+", ",", s)
+            s = re.sub(r"\s*,\s*\.", ".", s)
+            s = re.sub(r"\.\s*\.+", ".", s)
+            s = re.sub(r"^\s*[.,;:]\s*", "", s)
+            return re.sub(r"\s+", " ", s).strip()
+
+        res = _clean_text(res)
+
+        if has_prompt_tag:
+            full_prompt = res
+            style_desc = tmpl.replace("{prompt}", "").replace("{base_prompt}", "")
+            style_desc = style_desc.replace("{style}", style_p).replace("{mood}", mood_p)
+            style_desc = style_desc.replace("{lighting}", light_p).replace("{camera}", cam_p).replace("{detail}", det_p)
+            style_desc = style_desc.replace("{preset}", preset if preset != "Custom" else "")
+            style_desc = _clean_text(style_desc)
+        else:
+            style_desc = res
+            full_prompt = ""
+    elif format_style == "Comma Tags":
+        tags = [p for p in (style_p, mood_p, light_p, cam_p, det_p) if p]
+        style_desc = ", ".join(tags)
+        full_prompt = ""
+    else:  # Prompt Suffix
+        tags = [p for p in (style_p, mood_p, light_p, cam_p, det_p) if p]
+        style_desc = (", styled as " + ", ".join(tags)) if tags else ""
+        full_prompt = ""
+
+    # 2. Combine with base_prompt according to placement (if not already embedded)
+    b = base_prompt.strip()
+    s = style_desc.strip()
+
+    if not full_prompt:
+        if placement == "Append Style":
+            if b and s:
+                sep = " " if b.endswith((".", "!", "?")) else (". " if not b.endswith(",") else " ")
+                full_prompt = f"{b}{sep}{s}"
+            else:
+                full_prompt = b or s
+        elif placement == "Prepend Style":
+            if b and s:
+                sep = " " if s.endswith((".", "!", "?")) else (". " if not s.endswith(",") else " ")
+                full_prompt = f"{s}{sep}{b}"
+            else:
+                full_prompt = b or s
+        else:  # Style Only
+            full_prompt = s
+
+    # Clean double periods or dangling punctuation in prompt
+    full_prompt = re.sub(r"\.\s*\.+", ".", full_prompt).strip()
+
+    # 3. Aggregate Negative Prompt
+    neg_parts = []
+    if negative_prompt_input:
+        neg_parts.extend([t.strip() for t in negative_prompt_input.split(",") if t.strip()])
+    for n in (style_n, mood_n, light_n, cam_n, det_n):
+        if n:
+            neg_parts.extend([t.strip() for t in n.split(",") if t.strip()])
+
+    seen = set()
+    deduped_neg = []
+    for item in neg_parts:
+        low = item.lower()
+        if low not in seen:
+            seen.add(low)
+            deduped_neg.append(item)
+    negative_prompt = ", ".join(deduped_neg)
+
+    return full_prompt, style_desc, negative_prompt
+
+
+class ModularStyleComposer(io.ComfyNode):
+    """Modular Style Composer node bundling style, mood, lighting, camera, and detail into rich prompts."""
+
+    @classmethod
+    def define_schema(cls):
+        reload_style_data()
+        return io.Schema(
+            node_id="ModularStyleComposer",
+            display_name="Modular Style Composer",
+            category="ATP/Style",
+            description="Compose rich visual prompts by combining style, mood, lighting, camera, and detail dimensions with presets, customizable format strings, and live canvas preview.",
+            search_aliases=["Modular Style Composer", "Style Composer", "Style Generator", "Prompt Styler", "ModularStyleComposer", "MiniMaxH3StyleComposer"],
+            inputs=[
+                io.String.Input(
+                    "base_prompt",
+                    optional=True,
+                    multiline=True,
+                    default="",
+                    tooltip="Optional subject or base prompt to combine with the generated style.",
+                ),
+                io.Combo.Input(
+                    "preset",
+                    options=_get_preset_names(),
+                    default="Custom",
+                    tooltip="Preset aesthetic style. Selecting a preset sets the options below. Modifying any option switches this to 'Custom'.",
+                ),
+                io.Combo.Input(
+                    "style",
+                    options=_get_category_names("styles"),
+                    default="None",
+                    tooltip="Artistic medium and primary aesthetic.",
+                ),
+                io.Combo.Input(
+                    "mood",
+                    options=_get_category_names("moods"),
+                    default="None",
+                    tooltip="Atmosphere and emotional tone.",
+                ),
+                io.Combo.Input(
+                    "lighting",
+                    options=_get_category_names("lighting"),
+                    default="None",
+                    tooltip="Lighting setup, luminance, and color temperature.",
+                ),
+                io.Combo.Input(
+                    "camera",
+                    options=_get_category_names("cameras"),
+                    default="None",
+                    tooltip="Camera angle, focal length, framing, and depth of field.",
+                ),
+                io.Combo.Input(
+                    "detail",
+                    options=_get_category_names("details"),
+                    default="None",
+                    tooltip="Texture, surface finish, and micro-details.",
+                ),
+                io.Combo.Input(
+                    "format_style",
+                    options=["Natural Paragraph", "Comma Tags", "Prompt Suffix"],
+                    default="Natural Paragraph",
+                    tooltip="Formatting strategy for compiling the style clause.",
+                ),
+                io.String.Input(
+                    "format_string",
+                    optional=True,
+                    multiline=True,
+                    default="{prompt}. Rendered as {style}, evoking a {mood} atmosphere. Lit by {lighting}, {camera}, featuring {detail}.",
+                    tooltip="Custom template for Natural Paragraph format. Supported placeholders: {prompt}, {style}, {mood}, {lighting}, {camera}, {detail}.",
+                ),
+                io.Combo.Input(
+                    "placement",
+                    options=["Append Style", "Prepend Style", "Style Only"],
+                    default="Append Style",
+                    tooltip="Where to place the style description relative to the base prompt.",
+                ),
+                io.String.Input(
+                    "negative_prompt_input",
+                    optional=True,
+                    multiline=True,
+                    default="",
+                    tooltip="Optional existing negative prompt to append style-specific negative tags to.",
+                ),
+            ],
+            outputs=[
+                io.String.Output("text", display_name="prompt", tooltip="Complete combined prompt text."),
+                io.String.Output("style_description", display_name="style_description", tooltip="Standalone compiled style text."),
+                io.String.Output("negative_prompt", display_name="negative_prompt", tooltip="Combined negative prompt including recommended anti-style suppressions."),
+            ],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        base_prompt: str = "",
+        preset: str = "Custom",
+        style: str = "None",
+        mood: str = "None",
+        lighting: str = "None",
+        camera: str = "None",
+        detail: str = "None",
+        format_style: str = "Natural Paragraph",
+        format_string: str = "",
+        placement: str = "Append Style",
+        negative_prompt_input: str = "",
+        **kwargs,
+    ) -> io.NodeOutput:
+        full_prompt, style_desc, negative_prompt = compile_style_prompt(
+            base_prompt=base_prompt,
+            preset=preset,
+            style=style,
+            mood=mood,
+            lighting=lighting,
+            camera=camera,
+            detail=detail,
+            format_style=format_style,
+            format_string=format_string,
+            placement=placement,
+            negative_prompt_input=negative_prompt_input,
+        )
+
+        summary_text = (
+            f"[Modular Style Composer]\n"
+            f"Preset: {preset}\n"
+            f"Style: {style} | Mood: {mood}\n"
+            f"Lighting: {lighting} | Camera: {camera}\n"
+            f"Detail: {detail}\n"
+            f"Format: {format_style} ({placement})\n\n"
+            f"--- Prompt Output ---\n{full_prompt}\n\n"
+            f"--- Negative Prompt ---\n{negative_prompt if negative_prompt else '(None)'}"
+        )
+
+        return io.NodeOutput(
+            full_prompt,
+            style_desc,
+            negative_prompt,
+            ui=PreviewText(summary_text),
+        )
+
+
+class MiniMaxH3StyleComposer(ModularStyleComposer):
+    """Modular Style Composer (MiniMax H3 category alias)."""
+
+    @classmethod
+    def define_schema(cls):
+        schema = super().define_schema()
+        return io.Schema(
+            node_id="MiniMaxH3StyleComposer",
+            display_name="Modular Style Composer (MiniMax H3)",
+            category="ATP/Style",
+            description=schema.description,
+            search_aliases=schema.search_aliases,
+            inputs=schema.inputs,
+            outputs=schema.outputs,
+        )
+
+
+StyleComposer = ModularStyleComposer
+
+
 # Register server endpoints
 try:
     from server import PromptServer
@@ -2184,6 +2859,31 @@ try:
                 "path": "",
                 "last_visited_dir": _get_last_visited_text_dir() or initial_dir or "",
             })
+
+        @PromptServer.instance.routes.post("/h3/reload_style_options")
+        @PromptServer.instance.routes.get("/h3/reload_style_options")
+        @PromptServer.instance.routes.get("/h3/style_options")
+        async def reload_style_options_endpoint(request):
+            """Reloads all style dropdown JSON files from disk and returns updated options and presets."""
+            try:
+                data = reload_style_data()
+                return web.json_response({
+                    "success": True,
+                    "options": {
+                        "preset": list(data["presets"].keys()),
+                        "style": list(data["styles"].keys()),
+                        "mood": list(data["moods"].keys()),
+                        "lighting": list(data["lighting"].keys()),
+                        "camera": list(data["cameras"].keys()),
+                        "detail": list(data["details"].keys()),
+                    },
+                    "presets": data["presets"],
+                })
+            except Exception as e:
+                return web.json_response({
+                    "success": False,
+                    "error": str(e),
+                }, status=500)
 
 except Exception:
     pass
